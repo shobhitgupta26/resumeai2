@@ -1,4 +1,3 @@
-
 interface ResumeAnalysisRequest {
   text: string;
 }
@@ -49,10 +48,17 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
   try {
     console.log("Analyzing resume with content length:", fileContent.length);
     
+    // Clean up the content if it's a PDF to remove binary data and focus on text
+    const cleanContent = cleanResumeContent(fileContent);
+    
+    if (cleanContent.length < 50) {
+      throw new Error("Could not extract sufficient text from the resume. Please try a different file format.");
+    }
+    
     // The prompt that instructs Gemini what to do
     const prompt = `
-      Analyze this resume and provide detailed feedback:
-      "${fileContent}"
+      You are a professional resume analyst. Analyze this resume content and provide detailed feedback:
+      "${cleanContent}"
       
       Return your analysis as a JSON object with this structure:
       {
@@ -120,7 +126,12 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
     console.log("Gemini API response:", data);
 
     if (!response.ok) {
+      console.error("API error:", data);
       throw new Error(`API error: ${data.error?.message || 'Unknown error'}`);
+    }
+
+    if (!data.candidates || !data.candidates[0]?.content?.parts?.length) {
+      throw new Error("Invalid response format from Gemini API");
     }
 
     // Extract the generated text from the response
@@ -132,18 +143,78 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
                       generatedText.match(/```([\s\S]*?)```/) ||
                       [null, generatedText];
     
-    const cleanedJsonText = jsonMatch[1].trim();
-    console.log("Extracted JSON:", cleanedJsonText);
+    let cleanedJsonText = jsonMatch[1].trim();
     
-    // Parse the JSON
-    const analysisResult = JSON.parse(cleanedJsonText) as AnalysisResultData;
-    
-    return analysisResult;
+    // Additional cleaning to handle potential formatting issues
+    if (cleanedJsonText.startsWith('{') && cleanedJsonText.endsWith('}')) {
+      console.log("Extracted JSON:", cleanedJsonText);
+      
+      try {
+        // Parse the JSON
+        const analysisResult = JSON.parse(cleanedJsonText) as AnalysisResultData;
+        
+        // Validate the parsed result has the expected structure
+        if (!analysisResult.overallScore || !analysisResult.sections) {
+          throw new Error("Invalid analysis result structure");
+        }
+        
+        return analysisResult;
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        throw new Error("Could not parse analysis results from AI response");
+      }
+    } else {
+      throw new Error("Could not extract valid JSON from the API response");
+    }
   } catch (error) {
     console.error("Error analyzing resume:", error);
     // Fallback to mock data on error
     return generateMockAnalysis();
   }
+};
+
+// Helper function to clean resume content
+const cleanResumeContent = (content: string): string => {
+  // If it's a PDF, try to extract only meaningful text
+  if (content.startsWith('%PDF')) {
+    // Simple heuristic to extract text from PDF content
+    // Remove binary data and keep only printable ASCII and basic unicode
+    let cleanText = '';
+    let inTextBlock = false;
+    
+    // Split by lines and process
+    const lines = content.split('\n');
+    for (const line of lines) {
+      // Look for text blocks in the PDF
+      if (line.includes('/Text') || line.includes('/Contents') || line.includes('BT')) {
+        inTextBlock = true;
+      } else if (line.includes('ET') || line.includes('endstream')) {
+        inTextBlock = false;
+      }
+      
+      // If in text block, try to extract readable content
+      if (inTextBlock) {
+        // Extract only printable characters
+        const printable = line.replace(/[^\x20-\x7E\u00A0-\u00FF\u0100-\u017F\u0180-\u024F]/g, ' ')
+                             .replace(/\s+/g, ' ')
+                             .trim();
+        
+        if (printable.length > 3 && !/^[0-9.]+$/.test(printable)) {
+          cleanText += printable + ' ';
+        }
+      }
+    }
+    
+    // If not enough text was extracted, return a meaningful error message
+    if (cleanText.length < 50) {
+      return "Could not extract readable text from this PDF. Please try converting to a text format first.";
+    }
+    
+    return cleanText;
+  }
+  
+  // For other formats, just return the content as is
+  return content;
 };
 
 // Helper function to extract text from files
@@ -160,13 +231,20 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       reject(new Error('Error reading file'));
     };
     
-    // Read as text for .txt files
-    if (file.name.endsWith('.txt')) {
-      reader.readAsText(file);
+    // Try different reading approaches depending on file type
+    if (file.type === 'application/pdf') {
+      // Read as binary string for PDFs
+      reader.readAsBinaryString(file);
     } 
-    // For other file types, we just use a basic text extraction
-    // In a production app, you would want to use specific parsers for PDF, DOCX, etc.
+    else if (file.name.endsWith('.txt') || 
+             file.type === 'text/plain' || 
+             file.type === 'application/msword' || 
+             file.type.includes('document')) {
+      // Read as text for text-based files
+      reader.readAsText(file);
+    }
     else {
+      // For unknown types, try as text
       reader.readAsText(file);
     }
   });

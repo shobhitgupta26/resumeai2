@@ -1,3 +1,4 @@
+
 import {
   AlertCircle,
   Award,
@@ -16,12 +17,14 @@ import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AnalysisResultData, Insight, Recommendation } from "@/services/analyzerService";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AnalysisResultProps {
   results: AnalysisResultData | null;
+  isMockData?: boolean;
 }
 
-export default function AnalysisResult({ results }: AnalysisResultProps) {
+export default function AnalysisResult({ results, isMockData = false }: AnalysisResultProps) {
   const [isOpen, setIsOpen] = useState(false);
   
   if (!results) {
@@ -48,6 +51,15 @@ export default function AnalysisResult({ results }: AnalysisResultProps) {
 
   return (
     <div className="space-y-6">
+      {isMockData && (
+        <Alert variant="warning" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            This is sample analysis data. For real AI-powered analysis, please try uploading a different file format.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="col-span-1 md:col-span-2">
           <CardHeader className="flex-row justify-between items-center pb-2 space-y-0">

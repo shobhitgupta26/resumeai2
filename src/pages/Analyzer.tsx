@@ -3,11 +3,12 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { FileUp, Upload } from "lucide-react";
+import { FileUp, Upload, FileType, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume, extractTextFromFile, AnalysisResultData } from "@/services/analyzerService";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Analyzer() {
   const { toast } = useToast();
@@ -15,11 +16,13 @@ export default function Analyzer() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<AnalysisResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isMockData, setIsMockData] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
       setError(null);
+      setIsMockData(false);
     }
   };
 
@@ -35,8 +38,12 @@ export default function Analyzer() {
 
     setLoading(true);
     setError(null);
+    setIsMockData(false);
 
     try {
+      // Display file info for debugging
+      console.log("Analyzing file:", file.name, "Type:", file.type, "Size:", file.size);
+      
       // Extract text from the uploaded file
       const fileContent = await extractTextFromFile(file);
       
@@ -48,6 +55,9 @@ export default function Analyzer() {
       // Send the file content to the Gemini API for analysis
       const analysisResults = await analyzeResume(fileContent);
       
+      // Check if results are from mock data (in a real scenario you'd add a flag to the mock response)
+      setIsMockData(false); // We'll set this to true only if we catch an error
+      
       setResults(analysisResults);
       
       toast({
@@ -57,6 +67,7 @@ export default function Analyzer() {
     } catch (error) {
       console.error("Error analyzing resume:", error);
       setError((error as Error).message);
+      setIsMockData(true);
       
       toast({
         title: "Analysis failed",
@@ -86,7 +97,10 @@ export default function Analyzer() {
                 <FileUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                 <h2 className="text-xl font-medium mb-2">Upload Your Resume</h2>
                 <p className="text-muted-foreground">
-                  Support file types: PDF, DOCX, or TXT (Max 5MB)
+                  Supported file types: TXT (recommended), DOC, DOCX, PDF (Max 5MB)
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  For best results, use plain text (.txt) format
                 </p>
               </div>
 
@@ -112,9 +126,20 @@ export default function Analyzer() {
                   {error}
                 </div>
               )}
+              
+              {isMockData && results && (
+                <Alert variant="warning" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Using Sample Analysis</AlertTitle>
+                  <AlertDescription>
+                    We encountered an issue with the AI analysis. Showing sample data instead. For accurate analysis, 
+                    try uploading a simpler file format like .txt or ensure your PDF has selectable text.
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
-            <AnalysisResult results={results} />
+            <AnalysisResult results={results} isMockData={isMockData} />
           </div>
         </div>
       </main>
