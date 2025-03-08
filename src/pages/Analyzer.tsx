@@ -57,14 +57,17 @@ export default function Analyzer() {
       // Send the file content to the Gemini API for analysis
       const analysisResults = await analyzeResume(fileContent);
       
-      // Check if results are from mock data
-      setIsMockData(fileContent.includes("Could not extract readable text") || fileContent.length < 100);
-      
+      // Update with improved mock data detection
       setResults(analysisResults);
+      
+      // After setting results, check if it appears to be mock data
+      // We'll check if there was an error message in the fileContent or if it's suspiciously short
+      const mockDataDetected = fileContent.includes("Could not extract readable text") || fileContent.length < 100;
+      setIsMockData(mockDataDetected);
       
       toast({
         title: "Analysis complete",
-        description: isMockData 
+        description: mockDataDetected 
           ? "Using sample data due to text extraction issues" 
           : "Your resume has been analyzed successfully with Gemini AI",
       });

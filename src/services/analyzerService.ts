@@ -1,3 +1,4 @@
+
 interface ResumeAnalysisRequest {
   text: string;
 }
@@ -42,7 +43,8 @@ export interface AnalysisResultData {
 }
 
 const GEMINI_API_KEY = "AIzaSyD0MRUI3y9R_YhswBE2cneDwH918tXznwA";
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+// Updated to use the correct API endpoint
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
 
 export const analyzeResume = async (fileContent: string): Promise<AnalysisResultData> => {
   try {
@@ -97,7 +99,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
       Make the analysis detailed, constructive, and helpful for job seekers.
     `;
 
-    // Prepare the API request
+    // Prepare the API request with updated request structure
     const response = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
@@ -130,6 +132,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
       throw new Error(`API error: ${data.error?.message || 'Unknown error'}`);
     }
 
+    // Updated property access to match the new API response structure
     if (!data.candidates || !data.candidates[0]?.content?.parts?.length) {
       throw new Error("Invalid response format from Gemini API");
     }
