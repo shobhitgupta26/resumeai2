@@ -52,7 +52,7 @@ export default function AnalysisResult({ results, isMockData = false }: Analysis
   return (
     <div className="space-y-6">
       {isMockData && (
-        <Alert variant="warning" className="mb-4">
+        <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             This is sample analysis data. For real AI-powered analysis, please try uploading a different file format.
