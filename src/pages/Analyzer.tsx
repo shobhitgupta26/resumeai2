@@ -7,20 +7,23 @@ import { FileUp, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
 import { useToast } from "@/hooks/use-toast";
+import { analyzeResume, extractTextFromFile, AnalysisResultData } from "@/services/analyzerService";
 
 export default function Analyzer() {
   const { toast } = useToast();
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState<AnalysisResultData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = (e) => {
-    if (e.target.files[0]) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+      setError(null);
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) {
       toast({
         title: "No file selected",
@@ -31,80 +34,38 @@ export default function Analyzer() {
     }
 
     setLoading(true);
+    setError(null);
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Extract text from the uploaded file
+      const fileContent = await extractTextFromFile(file);
       
-      // Mock analysis results
-      setResults({
-        overallScore: 76,
-        sections: {
-          content: { score: 82 },
-          formatting: { score: 68 },
-          keywords: { score: 91 },
-          relevance: { score: 63 },
-        },
-        keyInsights: [
-          { type: "positive", text: "Strong professional experience section with quantifiable achievements." },
-          { type: "warning", text: "Education section could be more detailed with relevant coursework." },
-          { type: "negative", text: "Missing keywords that are commonly found in job descriptions for this role." },
-          { type: "positive", text: "Good use of action verbs throughout the resume." },
-        ],
-        recommendations: [
-          {
-            category: "content",
-            title: "Add more quantifiable achievements",
-            description: "Include specific metrics, percentages, or other numerical data to demonstrate your impact.",
-            examples: "Instead of 'Increased sales', use 'Increased regional sales by 27% over 6 months'."
-          },
-          {
-            category: "keywords",
-            title: "Include more industry-specific keywords",
-            description: "Your resume is missing some important keywords that recruiters look for.",
-            examples: "Consider adding terms like 'project management', 'agile methodology', or 'data analysis'."
-          },
-          {
-            category: "formatting",
-            title: "Improve section organization",
-            description: "The structure of your resume could be more clear with better section hierarchy.",
-            examples: "Use consistent headings and ensure proper spacing between sections."
-          },
-          {
-            category: "content",
-            title: "Strengthen your summary statement",
-            description: "Your professional summary should concisely highlight your most relevant experience and skills.",
-            examples: "Experienced project manager with 5+ years leading cross-functional teams and delivering enterprise software solutions."
-          },
-          {
-            category: "keywords",
-            title: "Tailor skills section to the job",
-            description: "Customize your skills section to match the requirements in the job description.",
-            examples: "For a marketing role, highlight skills like 'content strategy', 'SEO', and 'campaign management'."
-          },
-        ],
-        atsScores: {
-          readability: 85,
-          keywords: 72,
-          formatting: 90
-        },
-        detectedKeywords: [
-          "React",
-          "JavaScript",
-          "Product Management",
-          "Agile",
-          "Team Leadership",
-          "UI/UX",
-          "Customer Experience",
-          "A/B Testing"
-        ]
-      });
+      // Check if we got meaningful content
+      if (!fileContent || fileContent.trim().length < 50) {
+        throw new Error("Could not extract sufficient text from the file. Please try another file format or check file content.");
+      }
 
+      // Send the file content to the Gemini API for analysis
+      const analysisResults = await analyzeResume(fileContent);
+      
+      setResults(analysisResults);
+      
       toast({
         title: "Analysis complete",
         description: "Your resume has been analyzed successfully",
       });
-    }, 2000);
+    } catch (error) {
+      console.error("Error analyzing resume:", error);
+      setError((error as Error).message);
+      
+      toast({
+        title: "Analysis failed",
+        description: (error as Error).message || "An error occurred while analyzing your resume",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -145,6 +106,12 @@ export default function Analyzer() {
                   {!loading && <Upload className="ml-2 h-4 w-4" />}
                 </Button>
               </div>
+              
+              {error && (
+                <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-md text-sm">
+                  {error}
+                </div>
+              )}
             </div>
 
             <AnalysisResult results={results} />

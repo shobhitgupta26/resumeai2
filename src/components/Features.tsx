@@ -1,5 +1,5 @@
 
-import { Award, BarChart, Clock, FileText, Sparkles, Shield } from "lucide-react";
+import { Award, BarChart, Clock, FileText, Sparkles, Shield, Zap } from "lucide-react";
 
 export default function Features() {
   const features = [
@@ -33,6 +33,11 @@ export default function Features() {
       title: "Privacy Protection",
       description: "Your data is secure with our advanced encryption and privacy controls.",
     },
+    {
+      icon: <Zap className="h-6 w-6" />,
+      title: "Gemini AI Analysis",
+      description: "Leverage Google's Gemini AI to get deep insights on your resume's strengths and weaknesses.",
+    }
   ];
 
   return (
