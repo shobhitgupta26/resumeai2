@@ -23,6 +23,7 @@ export default function Analyzer() {
       setFile(e.target.files[0]);
       setError(null);
       setIsMockData(false);
+      setResults(null); // Clear previous results when a new file is selected
     }
   };
 
@@ -38,6 +39,7 @@ export default function Analyzer() {
 
     setLoading(true);
     setError(null);
+    setResults(null);
     setIsMockData(false);
 
     try {
@@ -55,14 +57,16 @@ export default function Analyzer() {
       // Send the file content to the Gemini API for analysis
       const analysisResults = await analyzeResume(fileContent);
       
-      // Check if results are from mock data (in a real scenario you'd add a flag to the mock response)
-      setIsMockData(false); // We'll set this to true only if we catch an error
+      // Check if results are from mock data
+      setIsMockData(fileContent.includes("Could not extract readable text") || fileContent.length < 100);
       
       setResults(analysisResults);
       
       toast({
         title: "Analysis complete",
-        description: "Your resume has been analyzed successfully",
+        description: isMockData 
+          ? "Using sample data due to text extraction issues" 
+          : "Your resume has been analyzed successfully with Gemini AI",
       });
     } catch (error) {
       console.error("Error analyzing resume:", error);
