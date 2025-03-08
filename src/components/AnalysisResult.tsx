@@ -1,4 +1,3 @@
-
 import {
   AlertCircle,
   Award,
@@ -16,42 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-
-// Define types for the result data
-interface Section {
-  score: number;
-}
-
-interface Sections {
-  [key: string]: Section;
-}
-
-interface Insight {
-  type: "positive" | "warning" | "negative";
-  text: string;
-}
-
-interface Recommendation {
-  category: "content" | "keywords" | "formatting" | "other";
-  title: string;
-  description: string;
-  examples?: string;
-}
-
-interface ATSScores {
-  readability: number;
-  keywords: number;
-  formatting: number;
-}
-
-interface AnalysisResultData {
-  overallScore: number;
-  sections: Sections;
-  keyInsights: Insight[];
-  recommendations: Recommendation[];
-  atsScores: ATSScores;
-  detectedKeywords: string[];
-}
+import { AnalysisResultData, Insight, Recommendation } from "@/services/analyzerService";
 
 interface AnalysisResultProps {
   results: AnalysisResultData | null;

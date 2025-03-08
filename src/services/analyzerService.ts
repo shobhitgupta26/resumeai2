@@ -8,6 +8,7 @@ export interface Section {
 }
 
 export interface Sections {
+  [key: string]: Section;
   content: Section;
   formatting: Section;
   keywords: Section;
