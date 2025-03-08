@@ -57,12 +57,26 @@ export default function Analyzer() {
       // Send the file content to the Gemini API for analysis
       const analysisResults = await analyzeResume(fileContent);
       
-      // Update with improved mock data detection
+      // Update results immediately
       setResults(analysisResults);
       
-      // After setting results, check if it appears to be mock data
-      // We'll check if there was an error message in the fileContent or if it's suspiciously short
-      const mockDataDetected = fileContent.includes("Could not extract readable text") || fileContent.length < 100;
+      // Check for indicators of auto-generated data
+      // 1. Low scores across all sections
+      const lowScores = analysisResults.overallScore < 10 && 
+                      Object.values(analysisResults.sections).every(s => s.score < 10);
+      
+      // 2. Contains specific text from our placeholder/mock data
+      const containsMockText = 
+        JSON.stringify(analysisResults).includes("Jane Doe") ||
+        JSON.stringify(analysisResults).includes("sample text") ||
+        JSON.stringify(analysisResults).includes("This is a resume for");
+      
+      // 3. Suspiciously short or problematic text
+      const badFileContent = fileContent.includes("Could not extract readable text") || 
+                           fileContent.length < 100;
+      
+      // Set mock data flag if any indicators are present
+      const mockDataDetected = lowScores || containsMockText || badFileContent;
       setIsMockData(mockDataDetected);
       
       toast({

@@ -1,4 +1,3 @@
-
 import {
   AlertCircle,
   Award,
@@ -55,7 +54,7 @@ export default function AnalysisResult({ results, isMockData = false }: Analysis
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            This is sample analysis data. For real AI-powered analysis, please try uploading a different file format.
+            This is sample analysis data. For real AI-powered analysis, please try uploading a different file format like .txt.
           </AlertDescription>
         </Alert>
       )}
