@@ -20,8 +20,8 @@ export default function ResumeHighlightPreview({ content, analysis }: ResumeHigh
 
   if (isPdfContent) {
     return (
-      <Card className="mb-6">
-        <CardHeader>
+      <Card className="mb-6 border-0 shadow-md overflow-hidden">
+        <CardHeader className="bg-muted/30">
           <CardTitle className="flex items-center gap-2 text-lg">
             Resume Preview
             <FileWarning className="h-4 w-4 text-orange-500" />
@@ -66,14 +66,14 @@ export default function ResumeHighlightPreview({ content, analysis }: ResumeHigh
   };
 
   return (
-    <Card className="mb-6">
-      <CardHeader>
+    <Card className="mb-6 border-0 shadow-md overflow-hidden">
+      <CardHeader className="bg-muted/30">
         <CardTitle className="flex items-center gap-2 text-lg">
           Resume Preview (Analysis Highlights)
           <AlertCircle className="h-4 w-4 text-muted-foreground" />
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <div className="prose max-w-none">
           {paragraphs.map((paragraph, index) => {
             const sectionType = getSectionType(paragraph);
@@ -82,7 +82,7 @@ export default function ResumeHighlightPreview({ content, analysis }: ResumeHigh
             return (
               <div
                 key={index}
-                className={`mb-4 p-2 rounded ${
+                className={`mb-4 p-3 rounded ${
                   needsImprovement ? 'bg-red-50 border border-red-200' : ''
                 }`}
               >
