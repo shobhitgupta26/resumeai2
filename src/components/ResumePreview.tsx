@@ -1,20 +1,10 @@
 
-import { Mail, Phone, Globe, Calendar, ExternalLink, FileText } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mail, Phone, Globe, Calendar, ExternalLink } from "lucide-react";
 
-export default function ResumePreview({ data, fileContent = null }) {
+export default function ResumePreview({ data }) {
   const hasData = data && Object.keys(data).length > 0;
-  const hasFileContent = fileContent && fileContent.trim().length > 0;
   
-  // Check if content is PDF
-  const isPdfContent = fileContent && (
-    fileContent.includes("%PDF-") || 
-    (fileContent.includes("obj") && 
-     fileContent.includes("endobj") && 
-     fileContent.includes("stream"))
-  );
-
-  if (!hasData && !hasFileContent) {
+  if (!hasData) {
     return (
       <div className="w-full h-full flex items-center justify-center p-10 border rounded-lg bg-muted/30">
         <div className="text-center">
@@ -22,40 +12,13 @@ export default function ResumePreview({ data, fileContent = null }) {
             Your resume preview will appear here
           </p>
           <p className="text-sm text-muted-foreground mt-2">
-            Fill out the form or upload a resume to see a preview
+            Fill out the form to see a live preview
           </p>
         </div>
       </div>
     );
   }
 
-  // If we have file content, display it as-is
-  if (hasFileContent) {
-    return (
-      <Card className="w-full h-full border rounded-lg bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Original Resume Content
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isPdfContent ? (
-            <div className="text-center p-4 text-muted-foreground">
-              <p>PDF content cannot be displayed directly.</p>
-              <p className="text-sm mt-2">Please upload a text version of your resume for better results.</p>
-            </div>
-          ) : (
-            <pre className="whitespace-pre-wrap font-mono text-xs overflow-auto p-4 border rounded bg-gray-50 max-h-[600px]">
-              {fileContent}
-            </pre>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Default to form preview
   const formatDate = (dateString) => {
     if (!dateString) return '';
     

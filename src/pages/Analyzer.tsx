@@ -1,12 +1,13 @@
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { FileUp, Upload, AlertCircle, AlertTriangle, BarChart3 } from "lucide-react";
+import { FileUp, Upload, FileType, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
 import { useToast } from "@/hooks/use-toast";
-import { analyzeResume, extractTextFromFile, AnalysisResultData, getMockAnalysisResult } from "@/services/analyzerService";
+import { analyzeResume, extractTextFromFile, AnalysisResultData } from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Analyzer() {
@@ -16,25 +17,13 @@ export default function Analyzer() {
   const [results, setResults] = useState<AnalysisResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMockData, setIsMockData] = useState(false);
-  const [fileContent, setFileContent] = useState<string>("");
-  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
+      setFile(e.target.files[0]);
       setError(null);
       setIsMockData(false);
-      setResults(null);
-      setQuotaExceeded(false);
-      
-      try {
-        const content = await extractTextFromFile(selectedFile);
-        setFileContent(content);
-      } catch (error) {
-        console.error("Error reading file content:", error);
-        setFileContent("");
-      }
+      setResults(null); // Clear previous results when a new file is selected
     }
   };
 
@@ -52,32 +41,41 @@ export default function Analyzer() {
     setError(null);
     setResults(null);
     setIsMockData(false);
-    setQuotaExceeded(false);
 
     try {
+      // Display file info for debugging
       console.log("Analyzing file:", file.name, "Type:", file.type, "Size:", file.size);
       
+      // Extract text from the uploaded file
       const fileContent = await extractTextFromFile(file);
       
+      // Check if we got meaningful content
       if (!fileContent || fileContent.trim().length < 50) {
         throw new Error("Could not extract sufficient text from the file. Please try another file format or check file content.");
       }
 
+      // Send the file content to the Gemini API for analysis
       const analysisResults = await analyzeResume(fileContent);
       
+      // Update results immediately
       setResults(analysisResults);
       
+      // Check for indicators of auto-generated data
+      // 1. Low scores across all sections
       const lowScores = analysisResults.overallScore < 10 && 
                       Object.values(analysisResults.sections).every(s => s.score < 10);
       
+      // 2. Contains specific text from our placeholder/mock data
       const containsMockText = 
         JSON.stringify(analysisResults).includes("Jane Doe") ||
         JSON.stringify(analysisResults).includes("sample text") ||
         JSON.stringify(analysisResults).includes("This is a resume for");
       
+      // 3. Suspiciously short or problematic text
       const badFileContent = fileContent.includes("Could not extract readable text") || 
                            fileContent.length < 100;
       
+      // Set mock data flag if any indicators are present
       const mockDataDetected = lowScores || containsMockText || badFileContent;
       setIsMockData(mockDataDetected);
       
@@ -89,29 +87,14 @@ export default function Analyzer() {
       });
     } catch (error) {
       console.error("Error analyzing resume:", error);
+      setError((error as Error).message);
+      setIsMockData(true);
       
-      const errorMessage = (error as Error).message;
-      setError(errorMessage);
-      
-      if (errorMessage.includes("quota") || errorMessage.includes("API quota exceeded")) {
-        setQuotaExceeded(true);
-        setIsMockData(true);
-        setResults(getMockAnalysisResult());
-        
-        toast({
-          title: "API Quota Exceeded",
-          description: "Using sample data. The API usage limit has been reached. Try again later.",
-          variant: "destructive",
-        });
-      } else {
-        setIsMockData(true);
-        
-        toast({
-          title: "Analysis failed",
-          description: errorMessage || "An error occurred while analyzing your resume",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Analysis failed",
+        description: (error as Error).message || "An error occurred while analyzing your resume",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -129,12 +112,10 @@ export default function Analyzer() {
             </p>
           </div>
 
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8 p-8 border rounded-lg bg-gradient-to-br from-secondary/40 to-background shadow-sm">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8 p-8 border rounded-lg bg-muted/30">
               <div className="text-center mb-6">
-                <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="h-8 w-8 text-primary" />
-                </div>
+                <FileUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                 <h2 className="text-xl font-medium mb-2">Upload Your Resume</h2>
                 <p className="text-muted-foreground">
                   Supported file types: TXT (recommended), DOC, DOCX, PDF (Max 5MB)
@@ -161,24 +142,13 @@ export default function Analyzer() {
                 </Button>
               </div>
               
-              {error && !quotaExceeded && (
+              {error && (
                 <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-md text-sm">
                   {error}
                 </div>
               )}
               
-              {quotaExceeded && (
-                <Alert variant="warning" className="mt-4">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>API Usage Limit Reached</AlertTitle>
-                  <AlertDescription>
-                    The Gemini AI API usage limit has been reached. We're showing sample analysis data instead.
-                    Please try again later when the quota resets.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {isMockData && results && !quotaExceeded && (
+              {isMockData && results && (
                 <Alert variant="destructive" className="mt-4">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Using Sample Analysis</AlertTitle>
@@ -190,9 +160,7 @@ export default function Analyzer() {
               )}
             </div>
 
-            <div className="space-y-6">
-              <AnalysisResult results={results} isMockData={isMockData} />
-            </div>
+            <AnalysisResult results={results} isMockData={isMockData} />
           </div>
         </div>
       </main>
