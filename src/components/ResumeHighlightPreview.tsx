@@ -69,7 +69,7 @@ export default function ResumeHighlightPreview({ content, analysis }: ResumeHigh
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          Resume Preview
+          Resume Preview (Analysis Highlights)
           <AlertCircle className="h-4 w-4 text-muted-foreground" />
         </CardTitle>
       </CardHeader>

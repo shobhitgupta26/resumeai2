@@ -7,9 +7,11 @@ import { FileUp, Upload, FileType, AlertCircle, AlertTriangle } from "lucide-rea
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
 import ResumeHighlightPreview from "@/components/ResumeHighlightPreview";
+import ResumePreview from "@/components/ResumePreview";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume, extractTextFromFile, AnalysisResultData, getMockAnalysisResult } from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Analyzer() {
   const { toast } = useToast();
@@ -192,7 +194,18 @@ export default function Analyzer() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-6">
-                <ResumeHighlightPreview content={fileContent} analysis={results} />
+                <Tabs defaultValue="original" className="w-full">
+                  <TabsList className="w-full grid grid-cols-2">
+                    <TabsTrigger value="original">Original Resume</TabsTrigger>
+                    <TabsTrigger value="analysis">Analysis View</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="original">
+                    <ResumePreview data={{}} fileContent={fileContent} />
+                  </TabsContent>
+                  <TabsContent value="analysis">
+                    <ResumeHighlightPreview content={fileContent} analysis={results} />
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <div className="space-y-6">
