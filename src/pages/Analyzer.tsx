@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FileUp, Upload, FileType, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
+import ResumeHighlightPreview from "@/components/ResumeHighlightPreview";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume, extractTextFromFile, AnalysisResultData } from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -17,13 +17,23 @@ export default function Analyzer() {
   const [results, setResults] = useState<AnalysisResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMockData, setIsMockData] = useState(false);
+  const [fileContent, setFileContent] = useState<string>("");
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
       setError(null);
       setIsMockData(false);
-      setResults(null); // Clear previous results when a new file is selected
+      setResults(null);
+      
+      try {
+        const content = await extractTextFromFile(selectedFile);
+        setFileContent(content);
+      } catch (error) {
+        console.error("Error reading file content:", error);
+        setFileContent("");
+      }
     }
   };
 
@@ -43,39 +53,29 @@ export default function Analyzer() {
     setIsMockData(false);
 
     try {
-      // Display file info for debugging
       console.log("Analyzing file:", file.name, "Type:", file.type, "Size:", file.size);
       
-      // Extract text from the uploaded file
       const fileContent = await extractTextFromFile(file);
       
-      // Check if we got meaningful content
       if (!fileContent || fileContent.trim().length < 50) {
         throw new Error("Could not extract sufficient text from the file. Please try another file format or check file content.");
       }
 
-      // Send the file content to the Gemini API for analysis
       const analysisResults = await analyzeResume(fileContent);
       
-      // Update results immediately
       setResults(analysisResults);
       
-      // Check for indicators of auto-generated data
-      // 1. Low scores across all sections
       const lowScores = analysisResults.overallScore < 10 && 
                       Object.values(analysisResults.sections).every(s => s.score < 10);
       
-      // 2. Contains specific text from our placeholder/mock data
       const containsMockText = 
         JSON.stringify(analysisResults).includes("Jane Doe") ||
         JSON.stringify(analysisResults).includes("sample text") ||
         JSON.stringify(analysisResults).includes("This is a resume for");
       
-      // 3. Suspiciously short or problematic text
       const badFileContent = fileContent.includes("Could not extract readable text") || 
                            fileContent.length < 100;
       
-      // Set mock data flag if any indicators are present
       const mockDataDetected = lowScores || containsMockText || badFileContent;
       setIsMockData(mockDataDetected);
       
@@ -112,7 +112,7 @@ export default function Analyzer() {
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <div className="mb-8 p-8 border rounded-lg bg-muted/30">
               <div className="text-center mb-6">
                 <FileUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
@@ -160,7 +160,15 @@ export default function Analyzer() {
               )}
             </div>
 
-            <AnalysisResult results={results} isMockData={isMockData} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <ResumeHighlightPreview content={fileContent} analysis={results} />
+              </div>
+
+              <div className="space-y-6">
+                <AnalysisResult results={results} isMockData={isMockData} />
+              </div>
+            </div>
           </div>
         </div>
       </main>
