@@ -61,6 +61,8 @@ const mockAnalysisResult: AnalysisResultData = {
   keyInsights: [
     { type: "positive", text: "Strong educational background." },
     { type: "warning", text: "Needs more focus on quantifiable achievements." },
+    { type: "negative", text: "Skills section lacks relevant industry keywords." },
+    { type: "warning", text: "Resume could benefit from more quantifiable metrics." },
   ],
   recommendations: [
     {
@@ -80,9 +82,21 @@ const mockAnalysisResult: AnalysisResultData = {
       title: "Improve Formatting",
       description: "Use a clean and professional format to make your resume easy to read.",
       examples: "Use bullet points, clear headings, and consistent font sizes."
+    },
+    {
+      category: "style",
+      title: "Be More Concise",
+      description: "Keep your resume content brief and to the point.",
+      examples: "Limit bullet points to 1-2 lines each and focus on your most relevant achievements."
+    },
+    {
+      category: "content",
+      title: "Highlight Technical Skills",
+      description: "Emphasize technical skills that are relevant to your target position.",
+      examples: "Include specific technologies, software, and methodologies you're proficient in."
     }
   ],
-  detectedKeywords: ["Project Management", "Data Analysis", "SEO"],
+  detectedKeywords: ["Project Management", "Data Analysis", "SEO", "Leadership", "Communication", "Excel"],
   atsScores: {
     readability: 75,
     keywords: 60,
@@ -104,6 +118,12 @@ export async function analyzeResume(text: string): Promise<AnalysisResultData> {
     4. Keyword optimization
     5. ATS compatibility
     6. Writing style and clarity
+
+    Be extremely detailed in your feedback, especially in the recommendations section.
+    Provide actionable advice that the person can implement right away.
+    Include at least 5 detailed recommendations in different categories.
+    Identify at least 4-6 key insights about the resume's strengths and weaknesses.
+    Detect at least 5-8 keywords that are present in the resume.
 
     Return the analysis in this exact JSON format:
     {
@@ -146,6 +166,15 @@ export async function analyzeResume(text: string): Promise<AnalysisResultData> {
     }
   } catch (error) {
     console.error("Error in analyzeResume:", error);
+    
+    // Check if the error is related to quota
+    const errorMessage = String(error);
+    if (errorMessage.includes("429") || 
+        errorMessage.includes("quota") || 
+        errorMessage.includes("Resource has been exhausted")) {
+      throw new Error("API quota exceeded. Please try again later or use a different API key.");
+    }
+    
     throw error;
   }
 }

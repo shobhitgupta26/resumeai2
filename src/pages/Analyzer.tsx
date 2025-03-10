@@ -1,13 +1,14 @@
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { FileUp, Upload, FileType, AlertCircle } from "lucide-react";
+import { FileUp, Upload, FileType, AlertCircle, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
 import ResumeHighlightPreview from "@/components/ResumeHighlightPreview";
 import { useToast } from "@/hooks/use-toast";
-import { analyzeResume, extractTextFromFile, AnalysisResultData } from "@/services/analyzerService";
+import { analyzeResume, extractTextFromFile, AnalysisResultData, getMockAnalysisResult } from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Analyzer() {
@@ -18,6 +19,7 @@ export default function Analyzer() {
   const [error, setError] = useState<string | null>(null);
   const [isMockData, setIsMockData] = useState(false);
   const [fileContent, setFileContent] = useState<string>("");
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -26,6 +28,7 @@ export default function Analyzer() {
       setError(null);
       setIsMockData(false);
       setResults(null);
+      setQuotaExceeded(false);
       
       try {
         const content = await extractTextFromFile(selectedFile);
@@ -51,6 +54,7 @@ export default function Analyzer() {
     setError(null);
     setResults(null);
     setIsMockData(false);
+    setQuotaExceeded(false);
 
     try {
       console.log("Analyzing file:", file.name, "Type:", file.type, "Size:", file.size);
@@ -87,14 +91,29 @@ export default function Analyzer() {
       });
     } catch (error) {
       console.error("Error analyzing resume:", error);
-      setError((error as Error).message);
-      setIsMockData(true);
       
-      toast({
-        title: "Analysis failed",
-        description: (error as Error).message || "An error occurred while analyzing your resume",
-        variant: "destructive",
-      });
+      const errorMessage = (error as Error).message;
+      setError(errorMessage);
+      
+      if (errorMessage.includes("quota") || errorMessage.includes("API quota exceeded")) {
+        setQuotaExceeded(true);
+        setIsMockData(true);
+        setResults(getMockAnalysisResult());
+        
+        toast({
+          title: "API Quota Exceeded",
+          description: "Using sample data. The API usage limit has been reached. Try again later.",
+          variant: "destructive",
+        });
+      } else {
+        setIsMockData(true);
+        
+        toast({
+          title: "Analysis failed",
+          description: errorMessage || "An error occurred while analyzing your resume",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -142,13 +161,24 @@ export default function Analyzer() {
                 </Button>
               </div>
               
-              {error && (
+              {error && !quotaExceeded && (
                 <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-md text-sm">
                   {error}
                 </div>
               )}
               
-              {isMockData && results && (
+              {quotaExceeded && (
+                <Alert variant="warning" className="mt-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>API Usage Limit Reached</AlertTitle>
+                  <AlertDescription>
+                    The Gemini AI API usage limit has been reached. We're showing sample analysis data instead.
+                    Please try again later when the quota resets.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {isMockData && results && !quotaExceeded && (
                 <Alert variant="destructive" className="mt-4">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Using Sample Analysis</AlertTitle>
