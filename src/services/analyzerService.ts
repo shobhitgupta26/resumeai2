@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI("AIzaSyAfyXnxzBm2H-Um6hy5ziDaofP8VRpdvnI");
@@ -36,9 +35,18 @@ export interface Recommendation {
 export async function extractTextFromFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    
+    if (file.type === "application/pdf") {
+      console.warn("PDF detected. Simple text extraction may not work properly.");
+    }
 
     reader.onload = (event) => {
       const text = event.target?.result as string;
+      
+      if (text.includes("%PDF-")) {
+        console.warn("PDF content detected, text extraction might be incomplete");
+      }
+      
       resolve(text);
     };
 
@@ -106,6 +114,17 @@ const mockAnalysisResult: AnalysisResultData = {
 
 export async function analyzeResume(text: string): Promise<AnalysisResultData> {
   try {
+    if (text.includes("%PDF-") || 
+       (text.includes("obj") && text.includes("endobj") && text.includes("stream"))) {
+      console.error("Cannot analyze PDF binary content");
+      throw new Error("The file contains PDF binary data which cannot be analyzed. Please upload a text version of your resume.");
+    }
+    
+    if (text.trim().length < 100) {
+      console.error("Resume text is too short to analyze");
+      throw new Error("The extracted text is too short to analyze. Please try a different file format or copy your resume text directly.");
+    }
+
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     const prompt = `Analyze this resume text and provide detailed feedback in JSON format:
@@ -167,7 +186,6 @@ export async function analyzeResume(text: string): Promise<AnalysisResultData> {
   } catch (error) {
     console.error("Error in analyzeResume:", error);
     
-    // Check if the error is related to quota
     const errorMessage = String(error);
     if (errorMessage.includes("429") || 
         errorMessage.includes("quota") || 

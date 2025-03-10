@@ -1,7 +1,8 @@
 
 import { AnalysisResultData } from "@/services/analyzerService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, FileWarning } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ResumeHighlightPreviewProps {
   content: string;
@@ -9,7 +10,42 @@ interface ResumeHighlightPreviewProps {
 }
 
 export default function ResumeHighlightPreview({ content, analysis }: ResumeHighlightPreviewProps) {
-  if (!content || !analysis) return null;
+  if (!content) return null;
+
+  // Check if content looks like PDF data
+  const isPdfContent = content.includes("%PDF-") || 
+                      (content.includes("obj") && 
+                       content.includes("endobj") && 
+                       content.includes("stream"));
+
+  if (isPdfContent) {
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            Resume Preview
+            <FileWarning className="h-4 w-4 text-orange-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="warning">
+            <FileWarning className="h-4 w-4" />
+            <AlertTitle>PDF File Detected</AlertTitle>
+            <AlertDescription>
+              We detected PDF content that cannot be properly displayed. For best results:
+              <ul className="list-disc list-inside mt-2">
+                <li>Try uploading a plain text (.txt) version of your resume</li>
+                <li>Copy and paste your resume content into a text file</li>
+                <li>Save your document as plain text before uploading</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!analysis) return null;
 
   // Get sections that need improvement (score < 60)
   const sectionsToImprove = Object.entries(analysis.sections)
