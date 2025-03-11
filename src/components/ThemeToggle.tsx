@@ -32,7 +32,7 @@ export default function ThemeToggle() {
       className={`rounded-full transition-all duration-300 ${
         theme === "light" 
           ? "hover:bg-blue/10 hover:text-blue" 
-          : "hover:bg-blue-light/20 hover:text-blue-light"
+          : "hover:bg-yellow/20 hover:text-yellow"
       }`}
       aria-label="Toggle theme"
     >

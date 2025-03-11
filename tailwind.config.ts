@@ -58,55 +58,55 @@ export default {
 				},
 				// Apple-inspired colors with lighter dark mode variants
 				blue: {
-					light: '#68ADEF',
+					light: '#99CCFF',
 					DEFAULT: '#0071E3',
-					dark: '#0051A2'
+					dark: '#60A5FA'
 				},
 				coral: {
-					light: '#FF7E6D',
+					light: '#FF9F87',
 					DEFAULT: '#FF453A',
-					dark: '#D73429'
+					dark: '#FF7B70'
 				},
 				mint: {
-					light: '#66D4B1',
+					light: '#86E9C9',
 					DEFAULT: '#34C759',
-					dark: '#248A3D'
+					dark: '#4AE583'
 				},
 				indigo: {
-					light: '#7D7AFF',
+					light: '#A5A3FF',
 					DEFAULT: '#5E5CE6',
-					dark: '#3634A3'
+					dark: '#8281FF'
 				},
 				orange: {
-					light: '#FFAC6B',
+					light: '#FFBE85',
 					DEFAULT: '#FF9500',
-					dark: '#C93400'
+					dark: '#FFAD33'
 				},
 				teal: {
-					light: '#6AC4DC',
+					light: '#8FD7E9',
 					DEFAULT: '#5AC8FA',
-					dark: '#0071A4'
+					dark: '#7DDDFF'
 				},
 				// New vibrant colors for dark mode
 				yellow: {
 					light: '#FFF9C4',
 					DEFAULT: '#FFEB3B',
-					dark: '#FBC02D'
+					dark: '#FFD60A'
 				},
 				purple: {
 					light: '#E1BEE7',
 					DEFAULT: '#9C27B0',
-					dark: '#6A1B9A'
+					dark: '#D580FF'
 				},
 				cyan: {
 					light: '#B2EBF2',
 					DEFAULT: '#00BCD4',
-					dark: '#0097A7'
+					dark: '#30F2F2'
 				},
 				pink: {
 					light: '#F8BBD0',
 					DEFAULT: '#E91E63',
-					dark: '#AD1457'
+					dark: '#FF6B9E'
 				},
 			},
 			borderRadius: {
