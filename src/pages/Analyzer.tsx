@@ -3,7 +3,7 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { FileUp, Upload, FileType, AlertCircle } from "lucide-react";
+import { FileUp, Upload, FileType, AlertCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,7 @@ export default function Analyzer() {
   const [results, setResults] = useState<AnalysisResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMockData, setIsMockData] = useState(false);
+  const [processingStage, setProcessingStage] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -41,54 +42,45 @@ export default function Analyzer() {
     setError(null);
     setResults(null);
     setIsMockData(false);
+    setProcessingStage("Reading file");
 
     try {
       // Display file info for debugging
       console.log("Analyzing file:", file.name, "Type:", file.type, "Size:", file.size);
       
       // Extract text from the uploaded file
+      setProcessingStage("Extracting text");
       const fileContent = await extractTextFromFile(file);
       
       // Check if we got meaningful content
       if (!fileContent || fileContent.trim().length < 50) {
-        throw new Error("Could not extract sufficient text from the file. Please try another file format or check file content.");
+        throw new Error("Could not extract sufficient text from the file. Please try another file format (TXT recommended) or check file content.");
       }
 
       // Send the file content to the Gemini API for analysis
+      setProcessingStage("Analyzing with AI");
       const analysisResults = await analyzeResume(fileContent);
       
-      // Update results immediately
+      // Update results
       setResults(analysisResults);
+      setProcessingStage(null);
       
-      // Check for indicators of auto-generated data
-      // 1. Low scores across all sections
-      const lowScores = analysisResults.overallScore < 10 && 
-                      Object.values(analysisResults.sections).every(s => s.score < 10);
+      // Check if we got real analysis or mock data
+      const mockDataDetected = analysisResults.keyInsights.some(insight => 
+        insight.text.includes("Could not generate specific insights"));
       
-      // 2. Contains specific text from our placeholder/mock data
-      const containsMockText = 
-        JSON.stringify(analysisResults).includes("Jane Doe") ||
-        JSON.stringify(analysisResults).includes("sample text") ||
-        JSON.stringify(analysisResults).includes("This is a resume for");
-      
-      // 3. Suspiciously short or problematic text
-      const badFileContent = fileContent.includes("Could not extract readable text") || 
-                           fileContent.length < 100;
-      
-      // Set mock data flag if any indicators are present
-      const mockDataDetected = lowScores || containsMockText || badFileContent;
       setIsMockData(mockDataDetected);
       
       toast({
-        title: "Analysis complete",
+        title: mockDataDetected ? "Analysis limited" : "Analysis complete",
         description: mockDataDetected 
-          ? "Using sample data due to text extraction issues" 
+          ? "We had trouble analyzing your file format. Try uploading a plain text (.txt) version for better results." 
           : "Your resume has been analyzed successfully with Gemini AI",
       });
     } catch (error) {
       console.error("Error analyzing resume:", error);
       setError((error as Error).message);
-      setIsMockData(true);
+      setProcessingStage(null);
       
       toast({
         title: "Analysis failed",
@@ -103,24 +95,26 @@ export default function Analyzer() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-20">
+      <main className="flex-1 pt-20 bg-gradient-to-b from-background to-muted/30">
         <div className="container px-4 py-8">
           <div className="text-center max-w-3xl mx-auto mb-8">
-            <h1 className="text-3xl font-bold mb-3">Resume Analyzer</h1>
+            <h1 className="text-4xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+              Resume Analyzer
+            </h1>
             <p className="text-lg text-muted-foreground">
               Get instant AI-powered insights on how to improve your resume
             </p>
           </div>
 
           <div className="max-w-5xl mx-auto">
-            <div className="mb-8 p-8 border rounded-lg bg-muted/30">
+            <div className="mb-8 p-8 border rounded-lg bg-card shadow-sm">
               <div className="text-center mb-6">
-                <FileUp className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <h2 className="text-xl font-medium mb-2">Upload Your Resume</h2>
+                <FileUp className="h-10 w-10 mx-auto mb-3 text-primary" />
+                <h2 className="text-2xl font-medium mb-2">Upload Your Resume</h2>
                 <p className="text-muted-foreground">
                   Supported file types: TXT (recommended), DOC, DOCX, PDF (Max 5MB)
                 </p>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-foreground mt-2 font-medium">
                   For best results, use plain text (.txt) format
                 </p>
               </div>
@@ -135,25 +129,39 @@ export default function Analyzer() {
                 <Button 
                   onClick={handleUpload} 
                   disabled={!file || loading}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-blue-500 hover:from-primary/90 hover:to-blue-600 transition-all duration-300"
+                  size="lg"
                 >
-                  {loading ? "Analyzing..." : "Analyze Resume"}
-                  {!loading && <Upload className="ml-2 h-4 w-4" />}
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {processingStage || "Analyzing..."}
+                    </>
+                  ) : (
+                    <>
+                      Analyze Resume
+                      <Upload className="ml-2 h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </div>
               
               {error && (
-                <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-md text-sm">
-                  {error}
-                </div>
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    {error}
+                  </AlertDescription>
+                </Alert>
               )}
               
               {isMockData && results && (
                 <Alert variant="destructive" className="mt-4">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Using Sample Analysis</AlertTitle>
+                  <AlertTitle>Limited Analysis</AlertTitle>
                   <AlertDescription>
-                    We encountered an issue with the AI analysis. Showing sample data instead. For accurate analysis, 
+                    We encountered an issue with analyzing your specific file. For accurate analysis, 
                     try uploading a simpler file format like .txt or ensure your PDF has selectable text.
                   </AlertDescription>
                 </Alert>

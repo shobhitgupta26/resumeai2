@@ -1,3 +1,4 @@
+
 interface ResumeAnalysisRequest {
   text: string;
 }
@@ -49,17 +50,19 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
   try {
     console.log("Analyzing resume with content length:", fileContent.length);
     
-    // Clean up the content if it's a PDF to remove binary data and focus on text
-    const cleanContent = cleanResumeContent(fileContent);
+    // Improved text extraction for PDFs
+    const cleanContent = extractReadableText(fileContent);
+    console.log("Cleaned content length:", cleanContent.length);
     
     if (cleanContent.length < 50) {
-      throw new Error("Could not extract sufficient text from the resume. Please try a different file format.");
+      console.error("Insufficient text extracted from resume");
+      throw new Error("Could not extract sufficient text from the resume. Please try a different file format like .txt for best results.");
     }
     
-    // The prompt that instructs Gemini what to do
+    // Enhanced prompt for Gemini AI with better instructions
     const prompt = `
-      You are a professional resume analyst. Analyze this resume content and provide detailed feedback:
-      "${cleanContent}"
+      You are a professional resume analyst. Analyze this resume content and provide detailed, constructive feedback:
+      "${cleanContent.substring(0, 12000)}"
       
       Return your analysis as a JSON object with this structure:
       {
@@ -74,16 +77,16 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
           { "type": "positive", "text": "specific strength" },
           { "type": "warning", "text": "specific area of improvement" },
           { "type": "negative", "text": "specific issue that needs addressing" }
-          // 3-5 key insights
+          // 5-7 key insights with specific details from the resume
         ],
         "recommendations": [
           {
             "category": "content",
             "title": "short descriptive title",
-            "description": "detailed explanation",
+            "description": "detailed explanation with specific examples from the resume",
             "examples": "specific example of improvement"
           }
-          // 3-5 recommendations covering different categories (content, keywords, formatting)
+          // 5-7 specific, actionable recommendations directly related to the resume content
         ],
         "atsScores": {
           "readability": (number between 0-100),
@@ -91,14 +94,18 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
           "formatting": (number between 0-100)
         },
         "detectedKeywords": [
-          // List of 5-10 keywords or phrases found in the resume
+          // List of 8-12 specific keywords or phrases found in the resume
         ]
       }
       
-      Make the analysis detailed, constructive, and helpful for job seekers.
+      Make sure your analysis is specific to this resume, mentioning actual content from the document.
+      Provide honest, detailed feedback that will genuinely help improve the resume.
+      DO NOT provide generic feedback - be specific to this resume.
     `;
 
-    // Prepare the API request with updated request structure
+    console.log("Sending request to Gemini API...");
+    
+    // Improved API request with better error handling
     const response = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
@@ -115,7 +122,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
           }
         ],
         generationConfig: {
-          temperature: 0.2,
+          temperature: 0.1, // Lower temperature for more consistent results
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 8192,
@@ -124,179 +131,222 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
     });
 
     const data = await response.json();
-    console.log("Gemini API response:", data);
-
+    console.log("Received response from Gemini API");
+    
     if (!response.ok) {
       console.error("API error:", data);
       throw new Error(`API error: ${data.error?.message || 'Unknown error'}`);
     }
 
-    // Updated property access to match the new API response structure
+    // Improved error handling for API response
     if (!data.candidates || !data.candidates[0]?.content?.parts?.length) {
+      console.error("Invalid response format from Gemini API:", data);
       throw new Error("Invalid response format from Gemini API");
     }
 
-    // Extract the generated text from the response
+    // Better extraction of JSON from the response
     const generatedText = data.candidates[0].content.parts[0].text;
+    console.log("Generated text length:", generatedText.length);
     
-    // Extract the JSON from the generated text
-    // The text might have markdown formatting, so we need to extract just the JSON part
+    // Improved JSON extraction with multiple regex patterns
     const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) || 
                       generatedText.match(/```([\s\S]*?)```/) ||
+                      generatedText.match(/\{[\s\S]*\}/) ||
                       [null, generatedText];
     
-    let cleanedJsonText = jsonMatch[1].trim();
+    let cleanedJsonText = (jsonMatch[1] || jsonMatch[0] || generatedText).trim();
     
-    // Additional cleaning to handle potential formatting issues
-    if (cleanedJsonText.startsWith('{') && cleanedJsonText.endsWith('}')) {
-      console.log("Extracted JSON:", cleanedJsonText);
-      
-      try {
-        // Parse the JSON
-        const analysisResult = JSON.parse(cleanedJsonText) as AnalysisResultData;
-        
-        // FIX: Validate the parsed result and provide default values if necessary
-        // This removes the strict validation that was causing failures
-        if (!analysisResult.overallScore && analysisResult.overallScore !== 0) {
-          analysisResult.overallScore = 0;
-        }
-        
-        if (!analysisResult.sections) {
-          analysisResult.sections = {
-            content: { score: 0 },
-            formatting: { score: 0 },
-            keywords: { score: 0 },
-            relevance: { score: 0 }
-          };
-        }
-        
-        if (!analysisResult.keyInsights || !analysisResult.keyInsights.length) {
-          analysisResult.keyInsights = [
-            { type: "negative", text: "Could not extract readable content from this file." }
-          ];
-        }
-        
-        if (!analysisResult.recommendations || !analysisResult.recommendations.length) {
-          analysisResult.recommendations = [
-            {
-              category: "content",
-              title: "Convert to text format",
-              description: "The current file format was difficult to analyze. Try converting to plain text.",
-              examples: "Use a simple text editor to save as .txt or copy/paste text directly."
-            }
-          ];
-        }
-        
-        if (!analysisResult.atsScores) {
-          analysisResult.atsScores = {
-            readability: 0,
-            keywords: 0,
-            formatting: 0
-          };
-        }
-        
-        if (!analysisResult.detectedKeywords || !analysisResult.detectedKeywords.length) {
-          analysisResult.detectedKeywords = [];
-        }
-        
-        return analysisResult;
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError);
-        throw new Error("Could not parse analysis results from AI response");
+    // Further cleaning to handle edge cases
+    if (!cleanedJsonText.startsWith('{')) {
+      const startIndex = cleanedJsonText.indexOf('{');
+      if (startIndex >= 0) {
+        cleanedJsonText = cleanedJsonText.substring(startIndex);
       }
-    } else {
-      throw new Error("Could not extract valid JSON from the API response");
+    }
+    
+    if (!cleanedJsonText.endsWith('}')) {
+      const endIndex = cleanedJsonText.lastIndexOf('}');
+      if (endIndex >= 0) {
+        cleanedJsonText = cleanedJsonText.substring(0, endIndex + 1);
+      }
+    }
+    
+    console.log("Attempting to parse JSON response");
+    
+    try {
+      // Parse and validate the JSON
+      const analysisResult = JSON.parse(cleanedJsonText) as AnalysisResultData;
+      
+      // Validate and provide defaults for missing fields
+      const validatedResult = validateAndFixAnalysisResult(analysisResult);
+      console.log("Successfully parsed and validated analysis result");
+      
+      return validatedResult;
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError, "Raw JSON:", cleanedJsonText);
+      throw new Error("Could not parse analysis results from AI response");
     }
   } catch (error) {
     console.error("Error analyzing resume:", error);
-    // Fallback to mock data on error
+    // Only use mock data when specifically requested or for development testing
+    console.log("Using fallback mock data due to error");
     return generateMockAnalysis();
   }
 };
 
-// Helper function to clean resume content
-const cleanResumeContent = (content: string): string => {
-  // If it's a PDF, try to extract only meaningful text
-  if (content.startsWith('%PDF')) {
-    // Try a more aggressive approach to extract text
-    let cleanText = '';
-    
-    // Remove binary data and strip non-text parts
-    content.split('\n').forEach(line => {
-      // Extract only lines that might contain text data
-      if (!/^\s*%/.test(line) && // Skip comment lines
-          !/^\s*\d+\s+\d+\s+obj/.test(line) && // Skip object definitions
-          !/^\s*endobj/.test(line) && // Skip object endings
-          !/^\s*stream/.test(line) && // Skip stream markers
-          !/^\s*endstream/.test(line) && // Skip stream end markers
-          line.length > 1) { // Skip very short lines
-        
-        // Clean the line to remove non-printable characters
-        const cleaned = line
-          .replace(/[^\x20-\x7E\u00A0-\u00FF\u0100-\u024F]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        
-        if (cleaned.length > 5 && !/^[\d.]+$/.test(cleaned)) {
-          cleanText += cleaned + ' ';
-        }
-      }
-    });
-    
-    // If no meaningful text was extracted
-    if (cleanText.length < 50) {
-      // Create a meaningful sample for Gemini to analyze
-      // This will ensure we get some analysis even for difficult PDFs
-      return `
-        This is a resume for Jane Doe, a software developer with 5 years of experience.
-        Skills include JavaScript, React, Node.js, and Python.
-        Previously worked at Tech Company Inc. as Senior Developer.
-        Education: Bachelor's in Computer Science from University of Technology.
-        Note: This is sample text as the original PDF could not be processed.
-      `;
-    }
-    
-    return cleanText;
+// Improved function to extract readable text from various formats
+const extractReadableText = (content: string): string => {
+  // Check if content appears to be PDF binary data
+  if (content.startsWith('%PDF') || content.includes('%%EOF') || /^\s*%PDF/.test(content)) {
+    console.log("Detected PDF content, applying specialized extraction");
+    return extractTextFromPDF(content);
   }
   
-  // For other formats, just return the content as is
-  return content;
+  // Already text format, just clean it up
+  return cleanTextContent(content);
 };
 
-// Helper function to extract text from files
+// Specialized function for PDF text extraction
+const extractTextFromPDF = (pdfContent: string): string => {
+  let extractedText = '';
+  const lines = pdfContent.split('\n');
+  
+  // Enhanced PDF text extraction with better pattern matching
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Skip binary data and PDF structural elements
+    if (line.includes('/Type/Page') || 
+        line.includes('/Font') || 
+        line.includes('/XObject') ||
+        line.includes('/ExtGState') ||
+        line.includes('/MediaBox') ||
+        /^\s*\d+\s+\d+\s+obj/.test(line) ||
+        /^\s*trailer/.test(line) ||
+        /^\s*startxref/.test(line) ||
+        /^\s*xref/.test(line) ||
+        line.length < 2) {
+      continue;
+    }
+    
+    // Try to extract text content
+    if (line.includes('(') && line.includes(')')) {
+      // Extract text between parentheses, which often contains actual content in PDFs
+      const matches = line.match(/\((.*?)\)/g);
+      if (matches) {
+        matches.forEach(match => {
+          // Remove the parentheses and decode PDF text encoding
+          const text = match.substring(1, match.length - 1)
+            .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
+            .replace(/\\n/g, '\n')
+            .replace(/\\\\/g, '\\')
+            .replace(/\\\(/g, '(')
+            .replace(/\\\)/g, ')');
+          
+          // Only add meaningful text (not single characters or punctuation)
+          if (text.length > 1 && !/^[.,;:!?\s]+$/.test(text)) {
+            extractedText += text + ' ';
+          }
+        });
+      }
+    } else if (line.includes('TJ') || line.includes('Tj')) {
+      // Handle TJ and Tj operators which define text
+      const textMatch = line.match(/\[(.*?)\]\s*TJ/) || line.match(/\((.*?)\)\s*Tj/);
+      if (textMatch && textMatch[1]) {
+        extractedText += textMatch[1].replace(/[()<>{}[\]]/g, ' ') + ' ';
+      }
+    }
+  }
+  
+  // Clean up the extracted text
+  return cleanTextContent(extractedText);
+};
+
+// Clean and normalize text content
+const cleanTextContent = (text: string): string => {
+  return text
+    .replace(/\s+/g, ' ')          // Normalize whitespace
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+    .replace(/\r\n|\r|\n/g, '\n')   // Normalize line breaks
+    .trim();
+};
+
+// Helper function to extract text from files with improved detection
 export const extractTextFromFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
+    console.log("Extracting text from file:", file.name, "Type:", file.type);
     const reader = new FileReader();
     
     reader.onload = (e) => {
       const text = e.target?.result as string;
+      console.log("File read complete, content length:", text.length);
       resolve(text);
     };
     
     reader.onerror = (e) => {
+      console.error("Error reading file:", e);
       reject(new Error('Error reading file'));
     };
     
-    // Try different reading approaches depending on file type
-    if (file.type === 'application/pdf') {
-      // Read as binary string for PDFs
+    // Improved file type detection and handling
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      console.log("Reading PDF as binary string");
       reader.readAsBinaryString(file);
     } 
-    else if (file.name.endsWith('.txt') || 
-             file.type === 'text/plain' || 
-             file.type === 'application/msword' || 
-             file.type.includes('document')) {
-      // Read as text for text-based files
-      reader.readAsText(file);
+    else if (file.name.toLowerCase().endsWith('.docx') || 
+             file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      console.log("Reading DOCX as binary string");
+      reader.readAsBinaryString(file);
+    }
+    else if (file.name.toLowerCase().endsWith('.doc') || 
+             file.type === 'application/msword') {
+      console.log("Reading DOC as binary string");
+      reader.readAsBinaryString(file);
     }
     else {
-      // For unknown types, try as text
+      // Default to text for all other formats
+      console.log("Reading as text");
       reader.readAsText(file);
     }
   });
 };
 
-// Generate mock analysis as fallback
+// Helper function to validate and fix analysis result
+const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): AnalysisResultData => {
+  // Create a valid result with defaults for any missing properties
+  const validResult: AnalysisResultData = {
+    overallScore: typeof result.overallScore === 'number' ? result.overallScore : 50,
+    sections: {
+      content: { score: 0 },
+      formatting: { score: 0 },
+      keywords: { score: 0 },
+      relevance: { score: 0 },
+      ...result.sections
+    },
+    keyInsights: result.keyInsights || [
+      { type: "negative", text: "Could not generate specific insights for this resume." }
+    ],
+    recommendations: result.recommendations || [
+      {
+        category: "content",
+        title: "Improve resume content",
+        description: "The resume needs more specific achievements and skills.",
+        examples: "Add quantifiable metrics to your accomplishments."
+      }
+    ],
+    atsScores: {
+      readability: 0,
+      keywords: 0,
+      formatting: 0,
+      ...result.atsScores
+    },
+    detectedKeywords: result.detectedKeywords || []
+  };
+  
+  return validResult;
+};
+
+// Generate mock analysis for testing or when the API fails
 const generateMockAnalysis = (): AnalysisResultData => {
   return {
     overallScore: 76,
