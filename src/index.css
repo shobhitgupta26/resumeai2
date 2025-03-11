@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -14,16 +14,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 262.1 83.3% 57.8%;
+    --primary: 210 100% 50%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 199 89% 48%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 35 100% 50%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,7 +31,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
+    --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.75rem;
   }
@@ -46,16 +46,16 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 262.1 83.3% 57.8%;
+    --primary: 210 100% 50%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 199 89% 48%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 35 100% 50%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -63,7 +63,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 262.1 83.3% 57.8%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -94,15 +94,43 @@
   }
   
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400;
+    @apply bg-clip-text text-transparent;
+  }
+  
+  .blue-gradient-text {
+    @apply gradient-text bg-gradient-to-r from-blue to-teal;
+  }
+  
+  .coral-gradient-text {
+    @apply gradient-text bg-gradient-to-r from-coral to-orange;
+  }
+  
+  .mint-gradient-text {
+    @apply gradient-text bg-gradient-to-r from-mint to-teal;
+  }
+  
+  .purple-gradient-text {
+    @apply gradient-text bg-gradient-to-r from-primary to-indigo;
   }
   
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/50;
   }
   
-  .button-gradient {
-    @apply bg-gradient-to-r from-primary to-purple-400 hover:from-primary/90 hover:to-purple-500 transition-all duration-300;
+  .button-blue-gradient {
+    @apply bg-gradient-to-r from-blue to-teal hover:from-blue/90 hover:to-teal/90 transition-all duration-300 text-white;
+  }
+  
+  .button-coral-gradient {
+    @apply bg-gradient-to-r from-coral to-orange hover:from-coral/90 hover:to-orange/90 transition-all duration-300 text-white;
+  }
+  
+  .button-mint-gradient {
+    @apply bg-gradient-to-r from-mint to-teal hover:from-mint/90 hover:to-teal/90 transition-all duration-300 text-white;
+  }
+  
+  .button-purple-gradient {
+    @apply bg-gradient-to-r from-primary to-indigo hover:from-primary/90 hover:to-indigo/90 transition-all duration-300 text-white;
   }
 }
 
@@ -127,21 +155,113 @@
 }
 
 .card-gradient {
-  background: linear-gradient(to right bottom, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
+  background: linear-gradient(to right bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .dark .card-gradient {
-  background: linear-gradient(to right bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+  background: linear-gradient(to right bottom, rgba(30, 30, 30, 0.8), rgba(20, 20, 20, 0.3));
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .auth-gradient {
-  background: linear-gradient(135deg, hsla(262, 83%, 58%, 0.2) 0%, hsla(262, 83%, 58%, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(0, 113, 227, 0.2) 0%, rgba(90, 200, 250, 0.1) 100%);
 }
 
-.hero-gradient {
-  background: linear-gradient(to right bottom, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+.hero-blue-gradient {
+  background: linear-gradient(to right bottom, rgba(0, 113, 227, 0.1), rgba(90, 200, 250, 0.05));
 }
 
-.dark .hero-gradient {
-  background: linear-gradient(to right bottom, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+.hero-coral-gradient {
+  background: linear-gradient(to right bottom, rgba(255, 69, 58, 0.1), rgba(255, 149, 0, 0.05));
+}
+
+.hero-mint-gradient {
+  background: linear-gradient(to right bottom, rgba(52, 199, 89, 0.1), rgba(90, 200, 250, 0.05));
+}
+
+.dark .hero-blue-gradient,
+.dark .hero-coral-gradient,
+.dark .hero-mint-gradient {
+  opacity: 0.2;
+}
+
+/* Apple-style shadow */
+.apple-shadow {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Apple-style button */
+.apple-button {
+  border-radius: 980px;
+  background-color: #0071E3;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.apple-button:hover {
+  background-color: #0077ED;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Product showcase styles */
+.product-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(30px);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.dark .product-card {
+  background: rgba(30, 30, 30, 0.8);
+}
+
+.product-card:hover {
+  transform: scale(1.02);
+}
+
+/* Image shine effect */
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 20%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  animation: shine 4s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 160%;
+  }
+}
+
+.dark .shine-effect::after {
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }

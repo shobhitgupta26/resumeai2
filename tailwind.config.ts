@@ -56,6 +56,37 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Apple-inspired colors
+				blue: {
+					light: '#68ADEF',
+					DEFAULT: '#0071E3',
+					dark: '#0051A2'
+				},
+				coral: {
+					light: '#FF7E6D',
+					DEFAULT: '#FF453A',
+					dark: '#D73429'
+				},
+				mint: {
+					light: '#66D4B1',
+					DEFAULT: '#34C759',
+					dark: '#248A3D'
+				},
+				indigo: {
+					light: '#7D7AFF',
+					DEFAULT: '#5E5CE6',
+					dark: '#3634A3'
+				},
+				orange: {
+					light: '#FFAC6B',
+					DEFAULT: '#FF9500',
+					dark: '#C93400'
+				},
+				teal: {
+					light: '#6AC4DC',
+					DEFAULT: '#5AC8FA',
+					dark: '#0071A4'
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -90,6 +121,14 @@ export default {
 					'50%': {
 						boxShadow: '0 0 20px rgba(139, 92, 246, 0.6)'
 					}
+				},
+				float: {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				scale: {
+					'0%': { transform: 'scale(0.95)' },
+					'100%': { transform: 'scale(1)' }
 				}
 			},
 			animation: {
@@ -98,7 +137,9 @@ export default {
 				"fade-in": "fadeIn 0.5s ease-in-out",
 				"slide-in": "slideIn 0.5s ease-in-out",
 				"pulse": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-				"glow": "glow 2s ease-in-out infinite"
+				"glow": "glow 2s ease-in-out infinite",
+				"float": "float 3s ease-in-out infinite",
+				"scale": "scale 0.3s ease-in-out",
 			},
 		}
 	},

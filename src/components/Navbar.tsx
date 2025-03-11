@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserButton, useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { Menu, X, FileText, BarChart, Home, Lock } from "lucide-react";
+import { Menu, X, FileText, BarChart, Home, Lock, ArrowRight } from "lucide-react";
 
 export default function Navbar() {
   const { isSignedIn, isLoaded } = useUser();
@@ -57,15 +57,15 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-300 ${
-        isScrolled ? "bg-background/90 backdrop-blur-md shadow-sm" : "bg-transparent"
+        isScrolled ? "bg-background/80 backdrop-blur-xl shadow-sm" : "bg-transparent"
       }`}
     >
       <div className="container flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center text-white">
+          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue to-teal flex items-center justify-center text-white animate-float">
             <FileText className="h-4 w-4" />
           </div>
-          <span className="font-bold text-xl gradient-text">ResumeAI</span>
+          <span className="font-bold text-xl blue-gradient-text">ResumeAI</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -81,7 +81,7 @@ export default function Navbar() {
               {route.icon}
               {route.name}
               {route.protected && !isSignedIn && (
-                <Lock className="h-3 w-3 text-primary" />
+                <Lock className="h-3 w-3 text-blue" />
               )}
             </Link>
           ))}
@@ -105,7 +105,7 @@ export default function Navbar() {
                 variant="ghost" 
                 size="sm"
                 onClick={handleSignIn}
-                className="hover:bg-primary/10 hover:text-primary"
+                className="hover:bg-blue/10 hover:text-blue rounded-full"
               >
                 Sign In
               </Button>
@@ -113,9 +113,10 @@ export default function Navbar() {
                 variant="default" 
                 size="sm"
                 onClick={handleSignUp}
-                className="button-gradient"
+                className="button-blue-gradient rounded-full"
               >
                 Sign Up
+                <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </>
           )}
@@ -128,7 +129,7 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden"
+            className="md:hidden rounded-full"
             aria-label="Toggle menu"
           >
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -138,21 +139,21 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="fixed inset-0 top-16 bg-background z-40 animate-fade-in md:hidden">
+        <div className="fixed inset-0 top-16 bg-background/95 backdrop-blur-xl z-40 animate-fade-in md:hidden">
           <div className="container py-6 flex flex-col gap-6">
             <nav className="flex flex-col gap-4">
               {routes.map((route) => (
                 <Link
                   key={route.path}
                   to={route.protected && !isSignedIn ? "/sign-in" : route.path}
-                  className={`text-lg font-medium transition-colors hover:text-foreground/80 flex items-center gap-2 p-2 rounded-md ${
+                  className={`text-lg font-medium transition-colors hover:text-foreground/80 flex items-center gap-2 p-2 rounded-xl ${
                     location.pathname === route.path ? "text-foreground bg-muted" : "text-foreground/60"
                   }`}
                 >
                   {route.icon}
                   {route.name}
                   {route.protected && !isSignedIn && (
-                    <Lock className="h-4 w-4 text-primary ml-auto" />
+                    <Lock className="h-4 w-4 text-blue ml-auto" />
                   )}
                 </Link>
               ))}
@@ -168,17 +169,18 @@ export default function Navbar() {
                 <>
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full rounded-full"
                     onClick={handleSignIn}
                   >
                     Sign In
                   </Button>
                   <Button 
                     variant="default" 
-                    className="w-full button-gradient"
+                    className="w-full button-blue-gradient rounded-full"
                     onClick={handleSignUp}
                   >
                     Sign Up
+                    <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
                 </>
               )}
