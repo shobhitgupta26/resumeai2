@@ -1,7 +1,17 @@
 
-import { Award, BarChart, Clock, FileText, Sparkles, Shield, Zap } from "lucide-react";
+import { Award, BarChart, Clock, FileText, Sparkles, Shield, Zap, Lock } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export default function Features() {
+  const { isSignedIn } = useUser();
+  const navigate = useNavigate();
+  
+  const handleSignUp = () => {
+    navigate("/sign-up");
+  };
+  
   const features = [
     {
       icon: <FileText className="h-6 w-6" />,
@@ -44,26 +54,53 @@ export default function Features() {
     <section className="section-padding bg-gradient-to-b from-muted/30 to-background">
       <div className="container px-4">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-slide-in">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 gradient-text">
             Features Designed for Success
           </h2>
           <p className="text-lg text-muted-foreground">
             Our AI-powered platform offers everything you need to create standout resumes that get noticed by employers.
           </p>
+          
+          {!isSignedIn && (
+            <Button 
+              onClick={handleSignUp}
+              className="mt-6 button-gradient"
+              size="lg"
+            >
+              Sign Up to Access All Features
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <div 
               key={index}
-              className="bg-card border rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-purple-300 animate-fade-in"
+              className="bg-card border rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 animate-fade-in relative overflow-hidden group"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mb-4 text-purple-600 dark:text-purple-400">
+              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/20 to-purple-400/20 flex items-center justify-center mb-4 text-primary">
                 {feature.icon}
               </div>
               <h3 className="text-xl font-medium mb-2 text-foreground">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
+              
+              {!isSignedIn && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="text-center p-4">
+                    <Lock className="h-6 w-6 text-primary mx-auto mb-2" />
+                    <p className="font-medium text-sm">Sign up to unlock</p>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="mt-2 border-primary/50 hover:bg-primary/10"
+                      onClick={handleSignUp}
+                    >
+                      Create Account
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { FileUp, Upload, FileType, AlertCircle, Loader2 } from "lucide-react";
+import { FileUp, Upload, AlertCircle, Loader2, FileText, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
 import { useToast } from "@/hooks/use-toast";
@@ -98,7 +98,7 @@ export default function Analyzer() {
       <main className="flex-1 pt-20 bg-gradient-to-b from-background to-muted/30">
         <div className="container px-4 py-8">
           <div className="text-center max-w-3xl mx-auto mb-8">
-            <h1 className="text-4xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+            <h1 className="text-4xl font-bold mb-3 gradient-text">
               Resume Analyzer
             </h1>
             <p className="text-lg text-muted-foreground">
@@ -107,9 +107,11 @@ export default function Analyzer() {
           </div>
 
           <div className="max-w-5xl mx-auto">
-            <div className="mb-8 p-8 border rounded-lg bg-card shadow-sm">
+            <div className="mb-8 p-8 border rounded-lg bg-card shadow-sm hover:shadow-md transition-all">
               <div className="text-center mb-6">
-                <FileUp className="h-10 w-10 mx-auto mb-3 text-primary" />
+                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/20 to-purple-400/20 flex items-center justify-center mx-auto mb-3 text-primary">
+                  <FileUp className="h-8 w-8" />
+                </div>
                 <h2 className="text-2xl font-medium mb-2">Upload Your Resume</h2>
                 <p className="text-muted-foreground">
                   Supported file types: TXT (recommended), DOC, DOCX, PDF (Max 5MB)
@@ -120,16 +122,19 @@ export default function Analyzer() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 max-w-md mx-auto">
-                <Input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.docx,.doc,.txt"
-                  className="cursor-pointer"
-                />
+                <div className="relative w-full">
+                  <Input
+                    type="file"
+                    onChange={handleFileChange}
+                    accept=".pdf,.docx,.doc,.txt"
+                    className="cursor-pointer border-dashed hover:border-primary/50 focus:border-primary/50 transition-colors"
+                  />
+                  <div className="absolute inset-0 pointer-events-none rounded-md border-2 border-dashed border-primary/0 group-focus:border-primary/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
                 <Button 
                   onClick={handleUpload} 
                   disabled={!file || loading}
-                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-blue-500 hover:from-primary/90 hover:to-blue-600 transition-all duration-300"
+                  className="w-full sm:w-auto button-gradient shadow-md"
                   size="lg"
                 >
                   {loading ? (
@@ -165,6 +170,27 @@ export default function Analyzer() {
                     try uploading a simpler file format like .txt or ensure your PDF has selectable text.
                   </AlertDescription>
                 </Alert>
+              )}
+              
+              {loading && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-center space-x-4 text-sm text-muted-foreground">
+                    <div className={`flex items-center space-x-2 ${processingStage === "Reading file" ? "text-primary font-medium" : ""}`}>
+                      <div className={`h-2 w-2 rounded-full ${processingStage === "Reading file" ? "bg-primary animate-pulse" : "bg-muted-foreground"}`}></div>
+                      <span>Reading file</span>
+                    </div>
+                    <div className="h-0.5 w-6 bg-muted"></div>
+                    <div className={`flex items-center space-x-2 ${processingStage === "Extracting text" ? "text-primary font-medium" : ""}`}>
+                      <div className={`h-2 w-2 rounded-full ${processingStage === "Extracting text" ? "bg-primary animate-pulse" : "bg-muted-foreground"}`}></div>
+                      <span>Extracting text</span>
+                    </div>
+                    <div className="h-0.5 w-6 bg-muted"></div>
+                    <div className={`flex items-center space-x-2 ${processingStage === "Analyzing with AI" ? "text-primary font-medium" : ""}`}>
+                      <div className={`h-2 w-2 rounded-full ${processingStage === "Analyzing with AI" ? "bg-primary animate-pulse" : "bg-muted-foreground"}`}></div>
+                      <span>AI analysis</span>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 
