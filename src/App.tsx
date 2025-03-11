@@ -60,7 +60,7 @@ const App = () => {
             <Route 
               path="/sign-in/*" 
               element={
-                <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/30">
+                <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/30 dark:from-blue-dark/20 dark:to-indigo-dark/10">
                   <div className="w-full max-w-md">
                     <SignIn 
                       routing="path" 
@@ -70,7 +70,14 @@ const App = () => {
                       appearance={{
                         elements: {
                           rootBox: "mx-auto w-full max-w-md",
-                          card: "bg-card shadow-xl border rounded-xl p-8 mx-4"
+                          card: "bg-card shadow-xl border rounded-xl p-8 mx-4 dark:bg-card/95 dark:backdrop-blur-md",
+                          headerTitle: "text-foreground",
+                          headerSubtitle: "text-muted-foreground",
+                          formButtonPrimary: "bg-blue hover:bg-blue-dark text-white",
+                          formFieldLabel: "text-foreground",
+                          formFieldInput: "bg-background border-border",
+                          footer: "text-muted-foreground",
+                          footerActionLink: "text-blue hover:text-blue-dark"
                         }
                       }}
                     />
@@ -81,7 +88,7 @@ const App = () => {
             <Route 
               path="/sign-up/*" 
               element={
-                <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/30">
+                <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-background to-muted/30 dark:from-blue-dark/20 dark:to-indigo-dark/10">
                   <div className="w-full max-w-md">
                     <SignUp 
                       routing="path" 
@@ -91,7 +98,14 @@ const App = () => {
                       appearance={{
                         elements: {
                           rootBox: "mx-auto w-full max-w-md",
-                          card: "bg-card shadow-xl border rounded-xl p-8 mx-4"
+                          card: "bg-card shadow-xl border rounded-xl p-8 mx-4 dark:bg-card/95 dark:backdrop-blur-md",
+                          headerTitle: "text-foreground",
+                          headerSubtitle: "text-muted-foreground",
+                          formButtonPrimary: "bg-blue hover:bg-blue-dark text-white",
+                          formFieldLabel: "text-foreground",
+                          formFieldInput: "bg-background border-border",
+                          footer: "text-muted-foreground",
+                          footerActionLink: "text-blue hover:text-blue-dark"
                         }
                       }}
                     />

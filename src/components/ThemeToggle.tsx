@@ -29,13 +29,18 @@ export default function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="rounded-full transition-all duration-300 hover:bg-blue/10 hover:text-blue"
+      className={`rounded-full transition-all duration-300 ${
+        theme === "light" 
+          ? "hover:bg-blue/10 hover:text-blue" 
+          : "hover:bg-blue-light/20 hover:text-blue-light"
+      }`}
       aria-label="Toggle theme"
     >
-      {theme === "light" ? 
-        <Moon className="h-5 w-5 transition-all duration-300 ease-in-out" /> : 
-        <Sun className="h-5 w-5 transition-all duration-300 ease-in-out" />
-      }
+      {theme === "light" ? (
+        <Moon className="h-5 w-5 transition-all duration-300 ease-in-out" />
+      ) : (
+        <Sun className="h-5 w-5 text-yellow-300 transition-all duration-300 ease-in-out animate-pulse" />
+      )}
     </Button>
   );
 }

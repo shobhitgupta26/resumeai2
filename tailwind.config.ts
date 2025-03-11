@@ -56,7 +56,7 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Apple-inspired colors
+				// Apple-inspired colors with lighter dark mode variants
 				blue: {
 					light: '#68ADEF',
 					DEFAULT: '#0071E3',
@@ -86,6 +86,27 @@ export default {
 					light: '#6AC4DC',
 					DEFAULT: '#5AC8FA',
 					dark: '#0071A4'
+				},
+				// New vibrant colors for dark mode
+				yellow: {
+					light: '#FFF9C4',
+					DEFAULT: '#FFEB3B',
+					dark: '#FBC02D'
+				},
+				purple: {
+					light: '#E1BEE7',
+					DEFAULT: '#9C27B0',
+					dark: '#6A1B9A'
+				},
+				cyan: {
+					light: '#B2EBF2',
+					DEFAULT: '#00BCD4',
+					dark: '#0097A7'
+				},
+				pink: {
+					light: '#F8BBD0',
+					DEFAULT: '#E91E63',
+					dark: '#AD1457'
 				},
 			},
 			borderRadius: {
