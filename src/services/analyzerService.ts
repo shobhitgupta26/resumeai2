@@ -42,71 +42,70 @@ export interface AnalysisResultData {
 }
 
 const GEMINI_API_KEY = "AIzaSyD0MRUI3y9R_YhswBE2cneDwH918tXznwA";
-// Updated to use the correct API endpoint
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
 
 export const analyzeResume = async (fileContent: string): Promise<AnalysisResultData> => {
   try {
     console.log("Analyzing resume with content length:", fileContent.length);
     
-    // Improved text extraction for PDFs
     const cleanContent = extractReadableText(fileContent);
     console.log("Cleaned content length:", cleanContent.length);
     
     if (cleanContent.length < 50) {
-      console.error("Insufficient text extracted from resume");
       throw new Error("Could not extract sufficient text from the resume. Please try a different file format like .txt for best results.");
     }
     
-    // Enhanced prompt for Gemini AI with better instructions
     const prompt = `
-      You are a professional resume analyst. Analyze this resume content and provide detailed, constructive feedback:
+      Analyze this resume content and provide a detailed, creative, and personalized analysis. Be specific and reference actual content from the resume:
+
       "${cleanContent.substring(0, 12000)}"
       
-      Return your analysis as a JSON object with this structure:
+      Provide a thorough analysis that includes:
+      1. Overall assessment of the resume's effectiveness
+      2. Specific strengths and weaknesses found in the actual content
+      3. Detailed suggestions for improvement based on current industry standards
+      4. Analysis of keyword optimization and ATS compatibility
+      5. Formatting and presentation evaluation
+      
+      Format your response as a JSON object with this structure:
       {
-        "overallScore": (number between 0-100),
+        "overallScore": (calculated score 0-100 based on comprehensive analysis),
         "sections": {
-          "content": { "score": (number between 0-100) },
-          "formatting": { "score": (number between 0-100) },
-          "keywords": { "score": (number between 0-100) },
-          "relevance": { "score": (number between 0-100) }
+          "content": {"score": (0-100)},
+          "formatting": {"score": (0-100)},
+          "keywords": {"score": (0-100)},
+          "relevance": {"score": (0-100)}
         },
         "keyInsights": [
-          { "type": "positive", "text": "specific strength" },
-          { "type": "warning", "text": "specific area of improvement" },
-          { "type": "negative", "text": "specific issue that needs addressing" }
-          // 5-7 key insights with specific details from the resume
+          {"type": "positive/warning/negative", "text": "specific insight referencing actual content"}
         ],
         "recommendations": [
           {
-            "category": "content",
-            "title": "short descriptive title",
-            "description": "detailed explanation with specific examples from the resume",
-            "examples": "specific example of improvement"
+            "category": "content/keywords/formatting/other",
+            "title": "specific action item",
+            "description": "detailed explanation referencing actual resume content",
+            "examples": "specific example from or for the resume"
           }
-          // 5-7 specific, actionable recommendations directly related to the resume content
         ],
         "atsScores": {
-          "readability": (number between 0-100),
-          "keywords": (number between 0-100),
-          "formatting": (number between 0-100)
+          "readability": (0-100),
+          "keywords": (0-100),
+          "formatting": (0-100)
         },
         "detectedKeywords": [
-          // List of 8-12 specific keywords or phrases found in the resume
+          "actual keywords found in the resume"
         ]
       }
-      
-      Make sure your analysis is specific to this resume, mentioning actual content from the document.
-      Provide honest, detailed feedback that will genuinely help improve the resume.
-      DO NOT provide generic feedback - be specific to this resume.
-      DO NOT return mock data or placeholder values - analyze the actual content provided.
-      Every insight, recommendation, and keyword must be derived from the actual resume text.
+
+      IMPORTANT:
+      - Reference specific content from the resume in your analysis
+      - Do not use generic feedback
+      - Be constructive but honest in your assessment
+      - Provide actionable recommendations based on the actual content
     `;
 
     console.log("Sending request to Gemini API...");
     
-    // Improved API request with better error handling
     const response = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
@@ -123,7 +122,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
           }
         ],
         generationConfig: {
-          temperature: 0.1, // Lower temperature for more consistent results
+          temperature: 0.7,
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 8192,
@@ -139,17 +138,14 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
       throw new Error(`API error: ${data.error?.message || 'Unknown error'}`);
     }
 
-    // Improved error handling for API response
     if (!data.candidates || !data.candidates[0]?.content?.parts?.length) {
       console.error("Invalid response format from Gemini API:", data);
       throw new Error("Invalid response format from Gemini API");
     }
 
-    // Better extraction of JSON from the response
     const generatedText = data.candidates[0].content.parts[0].text;
     console.log("Generated text length:", generatedText.length);
     
-    // Improved JSON extraction with multiple regex patterns
     const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) || 
                       generatedText.match(/```([\s\S]*?)```/) ||
                       generatedText.match(/\{[\s\S]*\}/) ||
@@ -157,7 +153,6 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
     
     let cleanedJsonText = (jsonMatch[1] || jsonMatch[0] || generatedText).trim();
     
-    // Further cleaning to handle edge cases
     if (!cleanedJsonText.startsWith('{')) {
       const startIndex = cleanedJsonText.indexOf('{');
       if (startIndex >= 0) {
@@ -175,10 +170,8 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
     console.log("Attempting to parse JSON response");
     
     try {
-      // Parse and validate the JSON
       const analysisResult = JSON.parse(cleanedJsonText) as AnalysisResultData;
       
-      // Validate and provide defaults for missing fields
       const validatedResult = validateAndFixAnalysisResult(analysisResult);
       console.log("Successfully parsed and validated analysis result");
       
@@ -193,28 +186,22 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
   }
 };
 
-// Improved function to extract readable text from various formats
 const extractReadableText = (content: string): string => {
-  // Check if content appears to be PDF binary data
   if (content.startsWith('%PDF') || content.includes('%%EOF') || /^\s*%PDF/.test(content)) {
     console.log("Detected PDF content, applying specialized extraction");
     return extractTextFromPDF(content);
   }
   
-  // Already text format, just clean it up
   return cleanTextContent(content);
 };
 
-// Specialized function for PDF text extraction
 const extractTextFromPDF = (pdfContent: string): string => {
   let extractedText = '';
   const lines = pdfContent.split('\n');
   
-  // Enhanced PDF text extraction with better pattern matching
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     
-    // Skip binary data and PDF structural elements
     if (line.includes('/Type/Page') || 
         line.includes('/Font') || 
         line.includes('/XObject') ||
@@ -228,13 +215,10 @@ const extractTextFromPDF = (pdfContent: string): string => {
       continue;
     }
     
-    // Try to extract text content
     if (line.includes('(') && line.includes(')')) {
-      // Extract text between parentheses, which often contains actual content in PDFs
       const matches = line.match(/\((.*?)\)/g);
       if (matches) {
         matches.forEach(match => {
-          // Remove the parentheses and decode PDF text encoding
           const text = match.substring(1, match.length - 1)
             .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
             .replace(/\\n/g, '\n')
@@ -242,14 +226,12 @@ const extractTextFromPDF = (pdfContent: string): string => {
             .replace(/\\\(/g, '(')
             .replace(/\\\)/g, ')');
           
-          // Only add meaningful text (not single characters or punctuation)
           if (text.length > 1 && !/^[.,;:!?\s]+$/.test(text)) {
             extractedText += text + ' ';
           }
         });
       }
     } else if (line.includes('TJ') || line.includes('Tj')) {
-      // Handle TJ and Tj operators which define text
       const textMatch = line.match(/\[(.*?)\]\s*TJ/) || line.match(/\((.*?)\)\s*Tj/);
       if (textMatch && textMatch[1]) {
         extractedText += textMatch[1].replace(/[()<>{}[\]]/g, ' ') + ' ';
@@ -257,20 +239,17 @@ const extractTextFromPDF = (pdfContent: string): string => {
     }
   }
   
-  // Clean up the extracted text
   return cleanTextContent(extractedText);
 };
 
-// Clean and normalize text content
 const cleanTextContent = (text: string): string => {
   return text
-    .replace(/\s+/g, ' ')          // Normalize whitespace
-    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
-    .replace(/\r\n|\r|\n/g, '\n')   // Normalize line breaks
+    .replace(/\s+/g, ' ')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .replace(/\r\n|\r|\n/g, '\n')
     .trim();
 };
 
-// Helper function to extract text from files with improved detection
 export const extractTextFromFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     console.log("Extracting text from file:", file.name, "Type:", file.type);
@@ -287,7 +266,6 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       reject(new Error('Error reading file'));
     };
     
-    // Improved file type detection and handling
     if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
       console.log("Reading PDF as binary string");
       reader.readAsBinaryString(file);
@@ -303,16 +281,13 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       reader.readAsBinaryString(file);
     }
     else {
-      // Default to text for all other formats
       console.log("Reading as text");
       reader.readAsText(file);
     }
   });
 };
 
-// Helper function to validate and fix analysis result
 const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): AnalysisResultData => {
-  // Create a valid result with defaults for any missing properties
   const validResult: AnalysisResultData = {
     overallScore: typeof result.overallScore === 'number' ? result.overallScore : 50,
     sections: {
