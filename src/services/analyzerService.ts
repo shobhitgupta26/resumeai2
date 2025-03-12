@@ -197,27 +197,35 @@ const extractReadableText = (content: string): string => {
 
 const extractTextFromPDF = (pdfContent: string): string => {
   let extractedText = '';
-  const lines = pdfContent.split('\n');
   
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  // Improved PDF text extraction logic
+  try {
+    // Look for text object markers in PDF
+    const textMarkers = ['/Text', '/TJ', '/Tj', '/T*', '/BT', '/ET'];
+    const lines = pdfContent.split('\n');
     
-    if (line.includes('/Type/Page') || 
-        line.includes('/Font') || 
-        line.includes('/XObject') ||
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // Skip binary data and non-text sections
+      if (
+        /[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\xFF]{10,}/.test(line) || 
+        line.includes('/Image') ||
         line.includes('/ExtGState') ||
-        line.includes('/MediaBox') ||
+        line.includes('/Font') ||
+        line.includes('/XObject') ||
+        line.includes('/ColorSpace') ||
         /^\s*\d+\s+\d+\s+obj/.test(line) ||
         /^\s*trailer/.test(line) ||
         /^\s*xref/.test(line) ||
-        /^\s*xref/.test(line) ||
-        line.length < 2) {
-      continue;
-    }
-    
-    if (line.includes('(') && line.includes(')')) {
-      const matches = line.match(/\((.*?)\)/g);
-      if (matches) {
+        line.length < 2
+      ) {
+        continue;
+      }
+      
+      // Text extraction for common PDF text encoding patterns
+      if (line.includes('(') && line.includes(')')) {
+        const matches = line.match(/\((.*?)\)/g) || [];
         matches.forEach(match => {
           const text = match.substring(1, match.length - 1)
             .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
@@ -230,20 +238,92 @@ const extractTextFromPDF = (pdfContent: string): string => {
             extractedText += text + ' ';
           }
         });
+      } 
+      
+      // Extract text from TJ operators (array of strings and positioning)
+      else if (line.includes(' TJ')) {
+        const tjMatch = line.match(/\[\s*(.*?)\s*\]\s*TJ/);
+        if (tjMatch && tjMatch[1]) {
+          const parts = tjMatch[1].split(/\s*(?:\(|\))\s*/);
+          parts.forEach(part => {
+            if (part && !/^[-\d.]+$/.test(part)) {
+              extractedText += part.replace(/[\\\(\)]/g, '') + ' ';
+            }
+          });
+        }
       }
-    } else if (line.includes('TJ') || line.includes('Tj')) {
-      const textMatch = line.match(/\[(.*?)\]\s*TJ/) || line.match(/\((.*?)\)\s*Tj/);
-      if (textMatch && textMatch[1]) {
-        extractedText += textMatch[1].replace(/[()<>{}[\]]/g, ' ') + ' ';
+      
+      // Extract text from Tj operators (simple string)
+      else if (line.includes(' Tj')) {
+        const tjMatch = line.match(/\(\s*(.*?)\s*\)\s*Tj/);
+        if (tjMatch && tjMatch[1]) {
+          extractedText += tjMatch[1].replace(/[\\\(\)]/g, '') + ' ';
+        }
+      }
+      
+      // Look for hex-encoded strings
+      else if (line.includes('<') && line.includes('>')) {
+        const hexMatches = line.match(/<([0-9A-Fa-f]+)>/g);
+        if (hexMatches) {
+          hexMatches.forEach(match => {
+            // Convert hex to ASCII
+            const hex = match.substring(1, match.length - 1);
+            try {
+              let hexText = '';
+              for (let i = 0; i < hex.length; i += 2) {
+                hexText += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+              }
+              if (hexText.length > 1 && /[a-zA-Z0-9]/.test(hexText)) {
+                extractedText += hexText + ' ';
+              }
+            } catch (e) {
+              // Skip invalid hex
+            }
+          });
+        }
       }
     }
+    
+    // Secondary pass to find more text if we didn't get enough
+    if (extractedText.length < 100) {
+      console.log("First pass extraction yielded limited text, trying secondary method");
+      
+      // Look for content between BT (Begin Text) and ET (End Text) markers
+      const btEtRegex = /BT([\s\S]*?)ET/g;
+      let btEtMatch;
+      while ((btEtMatch = btEtRegex.exec(pdfContent)) !== null) {
+        const textBlock = btEtMatch[1];
+        const textParts = textBlock.match(/\((.*?)\)Tj|\[(.*?)\]TJ/g) || [];
+        
+        textParts.forEach(part => {
+          if (part.endsWith('Tj')) {
+            const text = part.substring(1, part.length - 3).replace(/\\(\d{3})/g, (m, code) => 
+              String.fromCharCode(parseInt(code, 8))
+            );
+            extractedText += text + ' ';
+          } else if (part.endsWith('TJ')) {
+            const arrayContent = part.substring(1, part.length - 3);
+            const stringParts = arrayContent.match(/\((.*?)\)/g) || [];
+            stringParts.forEach(str => {
+              extractedText += str.substring(1, str.length - 1) + ' ';
+            });
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error in PDF text extraction:", error);
   }
   
+  console.log("Extracted text length from PDF:", extractedText.length);
   return cleanTextContent(extractedText);
 };
 
 const cleanTextContent = (text: string): string => {
   return text
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, ' ')
+    .replace(/\\r/g, '')
     .replace(/\s+/g, ' ')
     .replace(/[\x00-\x1F\x7F]/g, '')
     .replace(/\r\n|\r|\n/g, '\n')
