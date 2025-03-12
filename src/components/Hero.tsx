@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
@@ -27,7 +28,7 @@ export default function Hero() {
               </span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-              <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-700 bg-clip-text text-transparent">
                 Create Outstanding Resumes with AI
               </span>
             </h1>
@@ -37,7 +38,7 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg group rounded-full transition-all duration-300"
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-md hover:shadow-lg group rounded-full transition-all duration-300"
                 onClick={handleGetStarted}
               >
                 <FileText className="mr-2 h-5 w-5" /> 
@@ -83,7 +84,7 @@ export default function Hero() {
           </div>
           
           <div className="relative animate-fade-in">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl blur-xl opacity-30 animate-pulse"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-2xl blur-xl opacity-30 animate-pulse"></div>
             <div className="relative bg-card/60 backdrop-blur-lg border rounded-2xl overflow-hidden shadow-xl product-card shine-effect">
               <img 
                 src="https://images.unsplash.com/photo-1644982647711-9129d2ed7ceb?q=80&w=1000" 
@@ -107,7 +108,7 @@ export default function Hero() {
             </div>
             
             <div className="absolute -bottom-4 -right-4 bg-white dark:bg-card/60 backdrop-blur-lg p-4 rounded-2xl shadow-lg border flex items-center gap-3 animate-fade-in" style={{ animationDelay: "0.5s" }}>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white animate-float">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white animate-float">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>

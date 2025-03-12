@@ -1,4 +1,3 @@
-
 interface ResumeAnalysisRequest {
   text: string;
 }
@@ -101,6 +100,8 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
       Make sure your analysis is specific to this resume, mentioning actual content from the document.
       Provide honest, detailed feedback that will genuinely help improve the resume.
       DO NOT provide generic feedback - be specific to this resume.
+      DO NOT return mock data or placeholder values - analyze the actual content provided.
+      Every insight, recommendation, and keyword must be derived from the actual resume text.
     `;
 
     console.log("Sending request to Gemini API...");
@@ -188,9 +189,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
     }
   } catch (error) {
     console.error("Error analyzing resume:", error);
-    // Only use mock data when specifically requested or for development testing
-    console.log("Using fallback mock data due to error");
-    return generateMockAnalysis();
+    throw new Error("Failed to analyze resume: " + (error as Error).message);
   }
 };
 
@@ -223,7 +222,7 @@ const extractTextFromPDF = (pdfContent: string): string => {
         line.includes('/MediaBox') ||
         /^\s*\d+\s+\d+\s+obj/.test(line) ||
         /^\s*trailer/.test(line) ||
-        /^\s*startxref/.test(line) ||
+        /^\s*xref/.test(line) ||
         /^\s*xref/.test(line) ||
         line.length < 2) {
       continue;
@@ -324,14 +323,14 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
       ...result.sections
     },
     keyInsights: result.keyInsights || [
-      { type: "negative", text: "Could not generate specific insights for this resume." }
+      { type: "negative", text: "Unable to generate specific insights. Please try uploading a different file format." }
     ],
     recommendations: result.recommendations || [
       {
         category: "content",
-        title: "Improve resume content",
-        description: "The resume needs more specific achievements and skills.",
-        examples: "Add quantifiable metrics to your accomplishments."
+        title: "Unable to analyze resume content",
+        description: "We couldn't properly analyze your resume. Try uploading a plain text (.txt) version for better results.",
+        examples: "Convert your resume to plain text format to ensure all content is properly analyzed."
       }
     ],
     atsScores: {
@@ -344,70 +343,4 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
   };
   
   return validResult;
-};
-
-// Generate mock analysis for testing or when the API fails
-const generateMockAnalysis = (): AnalysisResultData => {
-  return {
-    overallScore: 76,
-    sections: {
-      content: { score: 82 },
-      formatting: { score: 68 },
-      keywords: { score: 91 },
-      relevance: { score: 63 },
-    },
-    keyInsights: [
-      { type: "positive", text: "Strong professional experience section with quantifiable achievements." },
-      { type: "warning", text: "Education section could be more detailed with relevant coursework." },
-      { type: "negative", text: "Missing keywords that are commonly found in job descriptions for this role." },
-      { type: "positive", text: "Good use of action verbs throughout the resume." },
-    ],
-    recommendations: [
-      {
-        category: "content",
-        title: "Add more quantifiable achievements",
-        description: "Include specific metrics, percentages, or other numerical data to demonstrate your impact.",
-        examples: "Instead of 'Increased sales', use 'Increased regional sales by 27% over 6 months'."
-      },
-      {
-        category: "keywords",
-        title: "Include more industry-specific keywords",
-        description: "Your resume is missing some important keywords that recruiters look for.",
-        examples: "Consider adding terms like 'project management', 'agile methodology', or 'data analysis'."
-      },
-      {
-        category: "formatting",
-        title: "Improve section organization",
-        description: "The structure of your resume could be more clear with better section hierarchy.",
-        examples: "Use consistent headings and ensure proper spacing between sections."
-      },
-      {
-        category: "content",
-        title: "Strengthen your summary statement",
-        description: "Your professional summary should concisely highlight your most relevant experience and skills.",
-        examples: "Experienced project manager with 5+ years leading cross-functional teams and delivering enterprise software solutions."
-      },
-      {
-        category: "keywords",
-        title: "Tailor skills section to the job",
-        description: "Customize your skills section to match the requirements in the job description.",
-        examples: "For a marketing role, highlight skills like 'content strategy', 'SEO', and 'campaign management'."
-      },
-    ],
-    atsScores: {
-      readability: 85,
-      keywords: 72,
-      formatting: 90
-    },
-    detectedKeywords: [
-      "React",
-      "JavaScript",
-      "Product Management",
-      "Agile",
-      "Team Leadership",
-      "UI/UX",
-      "Customer Experience",
-      "A/B Testing"
-    ]
-  };
 };

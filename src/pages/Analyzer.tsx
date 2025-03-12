@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,14 +15,12 @@ export default function Analyzer() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<AnalysisResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isMockData, setIsMockData] = useState(false);
   const [processingStage, setProcessingStage] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
       setError(null);
-      setIsMockData(false);
       setResults(null); // Clear previous results when a new file is selected
     }
   };
@@ -41,7 +38,6 @@ export default function Analyzer() {
     setLoading(true);
     setError(null);
     setResults(null);
-    setIsMockData(false);
     setProcessingStage("Reading file");
 
     try {
@@ -65,17 +61,9 @@ export default function Analyzer() {
       setResults(analysisResults);
       setProcessingStage(null);
       
-      // Check if we got real analysis or mock data
-      const mockDataDetected = analysisResults.keyInsights.some(insight => 
-        insight.text.includes("Could not generate specific insights"));
-      
-      setIsMockData(mockDataDetected);
-      
       toast({
-        title: mockDataDetected ? "Analysis limited" : "Analysis complete",
-        description: mockDataDetected 
-          ? "We had trouble analyzing your file format. Try uploading a plain text (.txt) version for better results." 
-          : "Your resume has been analyzed successfully with Gemini AI",
+        title: "Analysis complete",
+        description: "Your resume has been analyzed successfully with Gemini AI",
       });
     } catch (error) {
       console.error("Error analyzing resume:", error);
@@ -161,17 +149,6 @@ export default function Analyzer() {
                 </Alert>
               )}
               
-              {isMockData && results && (
-                <Alert variant="destructive" className="mt-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Limited Analysis</AlertTitle>
-                  <AlertDescription>
-                    We encountered an issue with analyzing your specific file. For accurate analysis, 
-                    try uploading a simpler file format like .txt or ensure your PDF has selectable text.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
               {loading && (
                 <div className="mt-6">
                   <div className="flex items-center justify-center space-x-4 text-sm text-muted-foreground">
@@ -194,7 +171,7 @@ export default function Analyzer() {
               )}
             </div>
 
-            <AnalysisResult results={results} isMockData={isMockData} />
+            <AnalysisResult results={results} />
           </div>
         </div>
       </main>

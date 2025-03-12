@@ -1,4 +1,3 @@
-
 import {
   AlertCircle,
   Award,
@@ -31,10 +30,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface AnalysisResultProps {
   results: AnalysisResultData | null;
-  isMockData?: boolean;
 }
 
-export default function AnalysisResult({ results, isMockData = false }: AnalysisResultProps) {
+export default function AnalysisResult({ results }: AnalysisResultProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   
@@ -76,15 +74,6 @@ export default function AnalysisResult({ results, isMockData = false }: Analysis
 
   return (
     <div className="space-y-6">
-      {isMockData && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            This is a limited analysis. For real AI-powered analysis, please try uploading a different file format like .txt.
-          </AlertDescription>
-        </Alert>
-      )}
-      
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto">
           <TabsTrigger value="overview" className="flex items-center gap-2">
@@ -370,3 +359,4 @@ export default function AnalysisResult({ results, isMockData = false }: Analysis
     </div>
   );
 }
+
