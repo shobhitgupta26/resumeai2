@@ -41,7 +41,7 @@ export interface AnalysisResultData {
   detectedKeywords: string[];
 }
 
-const GEMINI_API_KEY = "AIzaSyD0MRUI3y9R_YhswBE2cneDwH918tXznwA";
+const GEMINI_API_KEY = "AIzaSyAEvHNa-fRhkLRnEyLHhR2Cp9t8memXYSg";
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
 
 export const analyzeResume = async (fileContent: string): Promise<AnalysisResultData> => {
