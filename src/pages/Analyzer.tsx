@@ -1,12 +1,22 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { FileUp, Upload, AlertCircle, Loader2, FileText, Sparkles } from "lucide-react";
+import { FileUp, Upload, AlertCircle, Loader2, FileText, Sparkles, Save, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AnalysisResult from "@/components/AnalysisResult";
+import SavedAnalyses from "@/components/SavedAnalyses";
 import { useToast } from "@/hooks/use-toast";
-import { analyzeResume, extractTextFromFile, AnalysisResultData } from "@/services/analyzerService";
+import { 
+  analyzeResume, 
+  extractTextFromFile, 
+  AnalysisResultData, 
+  saveAnalysisToStorage, 
+  getSavedAnalyses, 
+  deleteSavedAnalysis, 
+  SavedAnalysis 
+} from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Analyzer() {
@@ -16,12 +26,21 @@ export default function Analyzer() {
   const [results, setResults] = useState<AnalysisResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<string | null>(null);
+  const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
+  const [currentSavedAnalysisId, setCurrentSavedAnalysisId] = useState<string | undefined>(undefined);
+
+  // Load saved analyses on component mount
+  useEffect(() => {
+    const analyses = getSavedAnalyses();
+    setSavedAnalyses(analyses);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
       setError(null);
       setResults(null); // Clear previous results when a new file is selected
+      setCurrentSavedAnalysisId(undefined);
     }
   };
 
@@ -39,6 +58,7 @@ export default function Analyzer() {
     setError(null);
     setResults(null);
     setProcessingStage("Reading file");
+    setCurrentSavedAnalysisId(undefined);
 
     try {
       // Display file info for debugging
@@ -57,9 +77,16 @@ export default function Analyzer() {
       setProcessingStage("Analyzing with AI");
       const analysisResults = await analyzeResume(fileContent);
       
-      // Update results
+      // Save the analysis to localStorage
+      const savedAnalysis = saveAnalysisToStorage(analysisResults, file.name);
+      
+      // Update the UI state
       setResults(analysisResults);
       setProcessingStage(null);
+      setCurrentSavedAnalysisId(savedAnalysis.id);
+      
+      // Refresh the saved analyses list
+      setSavedAnalyses(getSavedAnalyses());
       
       toast({
         title: "Analysis complete",
@@ -80,18 +107,52 @@ export default function Analyzer() {
     }
   };
 
+  const handleAnalysisSelect = (analysis: SavedAnalysis) => {
+    setResults(analysis.results);
+    setCurrentSavedAnalysisId(analysis.id);
+    setFile(null);
+    setError(null);
+    
+    toast({
+      title: "Analysis loaded",
+      description: `Loaded analysis for "${analysis.filename}"`,
+    });
+  };
+
+  const handleDeleteAnalysis = (id: string) => {
+    deleteSavedAnalysis(id);
+    
+    // If the deleted analysis is currently being viewed, clear the results
+    if (id === currentSavedAnalysisId) {
+      setResults(null);
+      setCurrentSavedAnalysisId(undefined);
+    }
+    
+    // Refresh the saved analyses list
+    setSavedAnalyses(getSavedAnalyses());
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 pt-20 bg-gradient-to-b from-background to-muted/30">
         <div className="container px-4 py-8">
-          <div className="text-center max-w-3xl mx-auto mb-8">
+          <div className="text-center max-w-3xl mx-auto mb-6">
             <h1 className="text-4xl font-bold mb-3 gradient-text">
               Resume Analyzer
             </h1>
             <p className="text-lg text-muted-foreground">
               Get instant AI-powered insights on how to improve your resume
             </p>
+          </div>
+
+          <div className="flex justify-center mb-6">
+            <SavedAnalyses 
+              savedAnalyses={savedAnalyses}
+              onAnalysisSelect={handleAnalysisSelect}
+              onDeleteAnalysis={handleDeleteAnalysis}
+              currentAnalysisId={currentSavedAnalysisId}
+            />
           </div>
 
           <div className="max-w-5xl mx-auto">
@@ -170,6 +231,17 @@ export default function Analyzer() {
                 </div>
               )}
             </div>
+
+            {results && currentSavedAnalysisId && savedAnalyses.length > 0 && (
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4 mr-1.5" />
+                  <span>
+                    Analysis saved on {new Date(savedAnalyses.find(a => a.id === currentSavedAnalysisId)?.timestamp || 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
 
             <AnalysisResult results={results} />
           </div>

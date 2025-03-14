@@ -41,6 +41,14 @@ export interface AnalysisResultData {
   detectedKeywords: string[];
 }
 
+export interface SavedAnalysis {
+  id: string;
+  timestamp: number;
+  filename: string;
+  overallScore: number;
+  results: AnalysisResultData;
+}
+
 const GEMINI_API_KEY = "AIzaSyAEvHNa-fRhkLRnEyLHhR2Cp9t8memXYSg";
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
 
@@ -398,4 +406,43 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
   };
   
   return validResult;
+};
+
+// Functions to manage saved analyses
+export const saveAnalysisToStorage = (analysis: AnalysisResultData, filename: string): SavedAnalysis => {
+  const savedAnalyses = getSavedAnalyses();
+  
+  const newSavedAnalysis: SavedAnalysis = {
+    id: generateId(),
+    timestamp: Date.now(),
+    filename,
+    overallScore: analysis.overallScore,
+    results: analysis
+  };
+  
+  const updatedAnalyses = [newSavedAnalysis, ...savedAnalyses];
+  localStorage.setItem('savedResumeAnalyses', JSON.stringify(updatedAnalyses));
+  
+  return newSavedAnalysis;
+};
+
+export const getSavedAnalyses = (): SavedAnalysis[] => {
+  const savedAnalysesString = localStorage.getItem('savedResumeAnalyses');
+  return savedAnalysesString ? JSON.parse(savedAnalysesString) : [];
+};
+
+export const deleteSavedAnalysis = (id: string): void => {
+  const savedAnalyses = getSavedAnalyses();
+  const updatedAnalyses = savedAnalyses.filter(analysis => analysis.id !== id);
+  localStorage.setItem('savedResumeAnalyses', JSON.stringify(updatedAnalyses));
+};
+
+export const getSavedAnalysisById = (id: string): SavedAnalysis | null => {
+  const savedAnalyses = getSavedAnalyses();
+  return savedAnalyses.find(analysis => analysis.id === id) || null;
+};
+
+// Helper function to generate a unique ID
+const generateId = (): string => {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
