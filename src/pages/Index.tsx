@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 
 export default function Index() {
   return (
-    <div className="min-h-screen flex flex-col dark:bg-gradient-to-b dark:from-background dark:via-indigo-dark/10 dark:to-background">
+    <div className="min-h-screen flex flex-col dark:bg-gradient-to-b dark:from-background dark:via-background/80 dark:to-background">
       <Navbar />
       <main className="flex-1">
         <Hero />

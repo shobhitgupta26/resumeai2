@@ -32,7 +32,7 @@ export default function Features() {
   ];
 
   return (
-    <section className="py-24 bg-muted/30">
+    <section className="py-24 bg-muted/30 dark:bg-background/50">
       <div className="container max-w-6xl px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-4">
@@ -47,7 +47,7 @@ export default function Features() {
           {features.map((feature, index) => (
             <div 
               key={index}
-              className="flex flex-col items-center text-center p-8"
+              className="flex flex-col items-center text-center p-8 rounded-2xl transition-all duration-300 hover:bg-background/50 dark:hover:bg-white/5"
             >
               <div className="mb-6 text-primary">
                 {feature.icon}

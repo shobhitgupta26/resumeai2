@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserButton, useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { Menu, X, Search, ShoppingBag } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const { isSignedIn, isLoaded } = useUser();
@@ -42,10 +41,8 @@ export default function Navbar() {
         </div>
 
         {/* Right side icons */}
-        <div className="flex items-center gap-6">
-          <button className="hidden md:block hover:text-foreground/80 transition-colors">
-            <Search className="h-5 w-5" />
-          </button>
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
           {isLoaded && isSignedIn ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
