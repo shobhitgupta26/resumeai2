@@ -1,63 +1,59 @@
 
-import { Award, BarChart, Shield, Zap, ArrowRight } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { Award, Sparkles, Shield, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useUser } from "@clerk/clerk-react";
 
 export default function Features() {
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
   
-  const handleSignUp = () => {
-    navigate("/sign-up");
-  };
-  
   const features = [
     {
-      icon: <BarChart className="h-6 w-6" />,
-      title: "Smart Analysis",
-      description: "Get detailed insights on improving your resume's effectiveness."
-    },
-    {
-      icon: <Zap className="h-6 w-6" />,
-      title: "AI Technology",
+      icon: <Sparkles className="h-8 w-8" />,
+      title: "AI-Powered",
       description: "Leverage advanced AI to optimize your resume content."
     },
     {
-      icon: <Award className="h-6 w-6" />,
-      title: "Success Rate",
-      description: "Increase your chances of landing interviews with optimized content."
+      icon: <Shield className="h-8 w-8" />,
+      title: "ATS-Friendly",
+      description: "Ensure your resume passes through applicant tracking systems."
     },
     {
-      icon: <Shield className="h-6 w-6" />,
-      title: "Data Security",
-      description: "Your information is protected with enterprise-grade security."
+      icon: <Award className="h-8 w-8" />,
+      title: "Professional Templates",
+      description: "Choose from our collection of expertly designed templates."
+    },
+    {
+      icon: <Zap className="h-8 w-8" />,
+      title: "Instant Analysis",
+      description: "Get detailed insights and improvements in real-time."
     }
   ];
 
   return (
     <section className="py-24 bg-muted/30">
       <div className="container max-w-6xl px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-            Features Designed for Success
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-4">
+            Designed for success
           </h2>
-          <p className="text-lg text-muted-foreground">
-            Our platform offers everything you need to create standout resumes.
+          <p className="text-xl text-muted-foreground">
+            Every feature is crafted to help you land your dream job.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {features.map((feature, index) => (
             <div 
               key={index}
-              className="text-center p-6 rounded-2xl bg-background border transition-all duration-300 hover:border-primary/50 hover:shadow-lg"
+              className="flex flex-col items-center text-center p-8"
             >
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto">
+              <div className="mb-6 text-primary">
                 {feature.icon}
               </div>
-              <h3 className="text-lg font-medium mb-2">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
+              <h3 className="text-2xl font-medium mb-3">{feature.title}</h3>
+              <p className="text-muted-foreground">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -65,12 +61,11 @@ export default function Features() {
         {!isSignedIn && (
           <div className="mt-16 text-center">
             <Button 
-              onClick={handleSignUp}
               size="lg"
-              className="rounded-full px-8"
+              className="px-8 py-6 text-lg rounded-full"
+              onClick={() => navigate("/sign-up")}
             >
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
+              Try it free
             </Button>
           </div>
         )}
