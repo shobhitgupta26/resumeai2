@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserButton, useUser } from "@clerk/clerk-react";
@@ -37,7 +38,12 @@ export default function Navbar() {
           <Link to="/features" className="hover:text-foreground/80 transition-colors">Features</Link>
           <Link to="/templates" className="hover:text-foreground/80 transition-colors">Templates</Link>
           <Link to="/pricing" className="hover:text-foreground/80 transition-colors">Pricing</Link>
-          <Link to="/builder" className="hover:text-foreground/80 transition-colors">Builder</Link>
+          {isSignedIn && (
+            <>
+              <Link to="/builder" className="hover:text-foreground/80 transition-colors">Builder</Link>
+              <Link to="/analyzer" className="hover:text-foreground/80 transition-colors">Analyzer</Link>
+            </>
+          )}
         </div>
 
         {/* Right side icons */}
@@ -70,7 +76,12 @@ export default function Navbar() {
             <Link to="/features" className="hover:text-foreground/80 transition-colors">Features</Link>
             <Link to="/templates" className="hover:text-foreground/80 transition-colors">Templates</Link>
             <Link to="/pricing" className="hover:text-foreground/80 transition-colors">Pricing</Link>
-            <Link to="/builder" className="hover:text-foreground/80 transition-colors">Builder</Link>
+            {isSignedIn && (
+              <>
+                <Link to="/builder" className="hover:text-foreground/80 transition-colors">Builder</Link>
+                <Link to="/analyzer" className="hover:text-foreground/80 transition-colors">Analyzer</Link>
+              </>
+            )}
             {!isSignedIn && (
               <Button 
                 variant="default"
