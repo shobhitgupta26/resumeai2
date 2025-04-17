@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserButton, useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 
 export default function Navbar() {
   const { isSignedIn, isLoaded } = useUser();
@@ -25,40 +25,72 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/80 backdrop-blur-xl" : "bg-background/95"
+        isScrolled 
+          ? "bg-background/80 backdrop-blur-xl shadow-sm" 
+          : "bg-transparent"
       }`}
     >
-      <nav className="flex items-center justify-between h-12 px-4 md:px-8 max-w-[1024px] mx-auto">
-        <Link to="/" className="shrink-0">
-          <div className="text-2xl font-medium">ResumeAI</div>
+      <nav className="flex items-center justify-between h-16 px-4 md:px-8 max-w-7xl mx-auto">
+        <Link to="/" className="shrink-0 flex items-center gap-2">
+          <div className="text-2xl font-medium">
+            <span className="text-primary">Resume</span>AI
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-8 text-sm">
-          <Link to="/features" className="hover:text-foreground/80 transition-colors">Features</Link>
-          <Link to="/templates" className="hover:text-foreground/80 transition-colors">Templates</Link>
-          <Link to="/pricing" className="hover:text-foreground/80 transition-colors">Pricing</Link>
-          {isSignedIn && (
-            <>
-              <Link to="/builder" className="hover:text-foreground/80 transition-colors">Builder</Link>
-              <Link to="/analyzer" className="hover:text-foreground/80 transition-colors">Analyzer</Link>
-            </>
-          )}
+        <div className="hidden md:flex items-center space-x-1 text-sm">
+          <div className="relative group">
+            <Button variant="ghost" className="flex items-center gap-1 px-3">
+              Resume <ChevronDown className="h-4 w-4" />
+            </Button>
+            <div className="absolute top-full left-0 transform opacity-0 scale-95 transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
+              <div className="bg-background/95 backdrop-blur-lg shadow-lg rounded-md mt-1 p-2 w-48 border">
+                <Link to="/builder" className="block px-4 py-2 rounded-md hover:bg-muted/50 transition-colors">Resume Builder</Link>
+                <Link to="/templates" className="block px-4 py-2 rounded-md hover:bg-muted/50 transition-colors">Resume Templates</Link>
+                <Link to="/analyzer" className="block px-4 py-2 rounded-md hover:bg-muted/50 transition-colors">Resume Analyzer</Link>
+              </div>
+            </div>
+          </div>
+          
+          <div className="relative group">
+            <Button variant="ghost" className="flex items-center gap-1 px-3">
+              Cover Letter <ChevronDown className="h-4 w-4" />
+            </Button>
+            <div className="absolute top-full left-0 transform opacity-0 scale-95 transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
+              <div className="bg-background/95 backdrop-blur-lg shadow-lg rounded-md mt-1 p-2 w-48 border">
+                <Link to="/cover-builder" className="block px-4 py-2 rounded-md hover:bg-muted/50 transition-colors">Cover Letter Builder</Link>
+                <Link to="/cover-templates" className="block px-4 py-2 rounded-md hover:bg-muted/50 transition-colors">Cover Letter Templates</Link>
+              </div>
+            </div>
+          </div>
+          
+          <Link to="/blog" className="px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">Blog</Link>
+          <Link to="/pricing" className="px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">Pricing</Link>
+          <Link to="/for-organizations" className="px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">For Organizations</Link>
         </div>
 
         {/* Right side icons */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <ThemeToggle />
           {isLoaded && isSignedIn ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
-            <Button 
-              variant="ghost" 
-              className="hidden md:flex hover:text-foreground/80"
-              onClick={() => navigate("/sign-in")}
-            >
-              Sign In
-            </Button>
+            <>
+              <Button 
+                variant="ghost" 
+                className="hidden md:flex"
+                onClick={() => navigate("/sign-in")}
+              >
+                Sign in
+              </Button>
+              <Button 
+                variant="default"
+                className="bg-primary text-white hover:bg-primary/90"
+                onClick={() => navigate("/sign-up")}
+              >
+                Get Started
+              </Button>
+            </>
           )}
           <button 
             className="md:hidden"
@@ -71,25 +103,42 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="fixed inset-0 top-12 bg-background z-40 md:hidden animate-fade-in">
-          <nav className="flex flex-col p-6 space-y-6 text-lg">
-            <Link to="/features" className="hover:text-foreground/80 transition-colors">Features</Link>
-            <Link to="/templates" className="hover:text-foreground/80 transition-colors">Templates</Link>
-            <Link to="/pricing" className="hover:text-foreground/80 transition-colors">Pricing</Link>
-            {isSignedIn && (
-              <>
-                <Link to="/builder" className="hover:text-foreground/80 transition-colors">Builder</Link>
-                <Link to="/analyzer" className="hover:text-foreground/80 transition-colors">Analyzer</Link>
-              </>
-            )}
+        <div className="fixed inset-0 top-16 bg-background/95 backdrop-blur-md z-40 md:hidden animate-fade-in">
+          <nav className="flex flex-col p-6 space-y-3 text-lg">
+            <div className="py-2 border-b">
+              <div className="font-medium mb-2">Resume</div>
+              <Link to="/builder" className="block py-2 pl-4 hover:text-primary transition-colors">Resume Builder</Link>
+              <Link to="/templates" className="block py-2 pl-4 hover:text-primary transition-colors">Resume Templates</Link>
+              <Link to="/analyzer" className="block py-2 pl-4 hover:text-primary transition-colors">Resume Analyzer</Link>
+            </div>
+            
+            <div className="py-2 border-b">
+              <div className="font-medium mb-2">Cover Letter</div>
+              <Link to="/cover-builder" className="block py-2 pl-4 hover:text-primary transition-colors">Cover Letter Builder</Link>
+              <Link to="/cover-templates" className="block py-2 pl-4 hover:text-primary transition-colors">Cover Letter Templates</Link>
+            </div>
+            
+            <Link to="/blog" className="py-2 border-b hover:text-primary transition-colors">Blog</Link>
+            <Link to="/pricing" className="py-2 border-b hover:text-primary transition-colors">Pricing</Link>
+            <Link to="/for-organizations" className="py-2 border-b hover:text-primary transition-colors">For Organizations</Link>
+            
             {!isSignedIn && (
-              <Button 
-                variant="default"
-                className="w-full"
-                onClick={() => navigate("/sign-in")}
-              >
-                Sign In
-              </Button>
+              <div className="flex flex-col gap-3 pt-4">
+                <Button 
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate("/sign-in")}
+                >
+                  Sign in
+                </Button>
+                <Button 
+                  variant="default"
+                  className="w-full bg-primary text-white hover:bg-primary/90"
+                  onClick={() => navigate("/sign-up")}
+                >
+                  Get Started
+                </Button>
+              </div>
             )}
           </nav>
         </div>

@@ -2,9 +2,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Stars, Bot, Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Hero() {
   const { isSignedIn } = useUser();
@@ -36,59 +35,77 @@ export default function Hero() {
   }, []);
 
   return (
-    <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/95 overflow-hidden">
-      <div className="container px-4 relative z-10 flex flex-col lg:flex-row items-center gap-8">
+    <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center pt-24 pb-16 overflow-hidden">
+      <div className="container px-4 relative z-10 flex flex-col lg:flex-row items-center gap-8 md:gap-12">
         <div className="text-left lg:w-1/2 animate-on-scroll opacity-0" style={{ animationDelay: "0.2s" }}>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight mb-6">
-            Your Resume,
-            <br />
-            <span className="text-gradient-primary">Reimagined.</span>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
+            AI Resume Builder
           </h1>
           
-          <p className="text-xl text-muted-foreground max-w-2xl mb-8 animate-on-scroll opacity-0" style={{ animationDelay: "0.4s" }}>
-            Create professional resumes powered by AI technology that helps you stand out and get noticed by employers.
+          <p className="text-xl text-muted-foreground max-w-xl mb-8 animate-on-scroll opacity-0" style={{ animationDelay: "0.4s" }}>
+            ResumeAI assistant is the easiest way to create a tailored resume containing all the right keywords, improve your writing & highlight your strengths.
           </p>
 
           <div className="flex flex-col sm:flex-row items-start gap-4 animate-on-scroll opacity-0" style={{ animationDelay: "0.6s" }}>
             <Button 
               size="lg"
-              className="w-full sm:w-auto px-8 py-6 text-lg rounded-full bg-primary hover:bg-primary/90 transition-all duration-300 hover:shadow-lg"
+              className="w-full sm:w-auto px-8 py-6 text-lg rounded-md bg-primary hover:bg-primary/90 transition-all duration-300"
               onClick={() => navigate(isSignedIn ? "/builder" : "/sign-up")}
             >
-              Get Started
+              Build your resume with AI
               <ChevronRight className="h-5 w-5 ml-1" />
             </Button>
-            <Button 
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto px-8 py-6 text-lg rounded-full border-2 transition-all duration-300 hover:shadow-md"
-              onClick={() => navigate("/features")}
-            >
-              Learn more
-            </Button>
           </div>
-        </div>
-
-        <div className="lg:w-1/2 mt-12 lg:mt-0 animate-on-scroll opacity-0" style={{ animationDelay: "0.8s" }}>
-          <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue/30 rounded-2xl blur opacity-75 animate-pulse"></div>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img 
-                src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=800"
-                alt="Person working on resume" 
-                className="w-full h-auto rounded-2xl object-cover transition-all duration-500 hover:scale-105"
-              />
+          
+          <div className="mt-12 flex items-center gap-4 animate-on-scroll opacity-0" style={{ animationDelay: "0.8s" }}>
+            <div className="flex">
+              <div className="h-10 w-10 rounded-full border-2 border-background bg-yellow-500 -ml-0"></div>
+              <div className="h-10 w-10 rounded-full border-2 border-background bg-red-500 -ml-4"></div>
+              <div className="h-10 w-10 rounded-full border-2 border-background bg-blue-500 -ml-4"></div>
+              <div className="h-10 w-10 rounded-full border-2 border-background bg-green-500 -ml-4"></div>
+              <div className="h-10 w-10 rounded-full border-2 border-background bg-purple-500 -ml-4"></div>
+            </div>
+            <div>
+              <p className="text-sm font-medium">3,900+ happy customers</p>
+              <div className="flex items-center text-yellow-500">
+                <span>★★★★★</span>
+                <span className="text-xs text-muted-foreground ml-1">shared their experience</span>
+              </div>
             </div>
           </div>
         </div>
+
+        <div className="lg:w-1/2 mt-12 lg:mt-0 animate-on-scroll opacity-0" style={{ animationDelay: "1s" }}>
+          <div className="relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-blue/20 rounded-xl blur opacity-75"></div>
+            <div className="relative rounded-xl overflow-hidden shadow-2xl">
+              <img 
+                src="public/lovable-uploads/bf50b132-c321-4dca-a7db-96acacb9051a.png"
+                alt="AI Resume Assistant" 
+                className="w-full h-auto rounded-xl object-cover"
+              />
+              <div className="absolute top-4 left-4">
+                <div className="flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium">
+                  <Bot className="h-4 w-4 text-primary" />
+                  <span>AI Assistant</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-8 grid grid-cols-4 gap-4 px-4">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" alt="Tesla" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg" alt="Spotify" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Pinterest-logo.png" alt="Pinterest" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
+          </div>
+          <p className="text-center text-xs text-muted-foreground mt-2">Our resumes get people hired at top companies</p>
+        </div>
       </div>
 
-      {/* Ambient light effects */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-full max-w-5xl aspect-[16/9] rounded-2xl bg-gradient-to-b from-primary/10 to-primary/5 blur-3xl opacity-50 animate-pulse" />
-      </div>
-      <div className="absolute -left-48 top-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute -right-48 bottom-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+      {/* Background elements */}
+      <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue/5 rounded-full blur-3xl"></div>
     </section>
   );
 }
