@@ -8,8 +8,8 @@ export default function Footer() {
   return (
     <footer className="border-t bg-gradient-to-b from-muted/20 to-background">
       <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          <div className="col-span-1 md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="col-span-1 md:col-span-1">
             <Link to="/" className="inline-block mb-4">
               <span className="font-bold text-2xl bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 bg-clip-text text-transparent">ResumeAI</span>
             </Link>

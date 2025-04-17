@@ -4,7 +4,6 @@ import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Legal from "@/components/Legal";
 import Navbar from "@/components/Navbar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, Star, FileText } from "lucide-react";
 
 export default function Index() {

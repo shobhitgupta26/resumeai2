@@ -52,21 +52,8 @@ export default function Navbar() {
             </div>
           </div>
           
-          <div className="relative group">
-            <Button variant="ghost" className="flex items-center gap-1 px-3">
-              Cover Letter <ChevronDown className="h-4 w-4" />
-            </Button>
-            <div className="absolute top-full left-0 transform opacity-0 scale-95 transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
-              <div className="bg-background/95 backdrop-blur-lg shadow-lg rounded-md mt-1 p-2 w-48 border">
-                <Link to="/cover-builder" className="block px-4 py-2 rounded-md hover:bg-muted/50 transition-colors">Cover Letter Builder</Link>
-                <Link to="/cover-templates" className="block px-4 py-2 rounded-md hover:bg-muted/50 transition-colors">Cover Letter Templates</Link>
-              </div>
-            </div>
-          </div>
-          
-          <Link to="/blog" className="px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">Blog</Link>
+          <Link to="/templates" className="px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">Templates</Link>
           <Link to="/pricing" className="px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">Pricing</Link>
-          <Link to="/for-organizations" className="px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">For Organizations</Link>
         </div>
 
         {/* Right side icons */}
@@ -112,15 +99,8 @@ export default function Navbar() {
               <Link to="/analyzer" className="block py-2 pl-4 hover:text-primary transition-colors">Resume Analyzer</Link>
             </div>
             
-            <div className="py-2 border-b">
-              <div className="font-medium mb-2">Cover Letter</div>
-              <Link to="/cover-builder" className="block py-2 pl-4 hover:text-primary transition-colors">Cover Letter Builder</Link>
-              <Link to="/cover-templates" className="block py-2 pl-4 hover:text-primary transition-colors">Cover Letter Templates</Link>
-            </div>
-            
-            <Link to="/blog" className="py-2 border-b hover:text-primary transition-colors">Blog</Link>
+            <Link to="/templates" className="py-2 border-b hover:text-primary transition-colors">Templates</Link>
             <Link to="/pricing" className="py-2 border-b hover:text-primary transition-colors">Pricing</Link>
-            <Link to="/for-organizations" className="py-2 border-b hover:text-primary transition-colors">For Organizations</Link>
             
             {!isSignedIn && (
               <div className="flex flex-col gap-3 pt-4">

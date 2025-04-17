@@ -15,25 +15,25 @@ export default function Features() {
       icon: <Bot className="h-8 w-8" />,
       title: "AI-Powered Resume Writing",
       description: "Our AI assistant refines your resume by re-writing bullet points to highlight your achievements and showcase your impact.",
-      image: "public/lovable-uploads/0512990e-8d0a-4e94-b818-1d5907d1d803.png"
+      image: "https://images.unsplash.com/photo-1555421689-3f034debb7a6?auto=format&fit=crop&q=80&w=600"
     },
     {
       icon: <Shield className="h-8 w-8" />,
       title: "ATS-Friendly Formats",
       description: "All our templates are designed to pass through applicant tracking systems with flying colors.",
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=600"
+      image: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?auto=format&fit=crop&q=80&w=600"
     },
     {
       icon: <FileText className="h-8 w-8" />,
       title: "Tailor Your Resume in One Click",
       description: "With a click of a button and a job description paste, get your resume tailored to the job.",
-      image: "public/lovable-uploads/04d8634b-b52b-4c20-839c-2a0959289382.png"
+      image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=600"
     },
     {
       icon: <BarChart className="h-8 w-8" />,
       title: "Impact-Oriented Content",
       description: "Transform your experience into impactful statements that showcase measurable results and achievements.",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600"
+      image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600"
     }
   ];
 
@@ -88,20 +88,18 @@ export default function Features() {
           {features.map((feature, index) => (
             <div 
               key={index}
-              className={`feature-item opacity-0 flex ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} flex-col gap-8 items-center`}
+              className="feature-item opacity-0 flex flex-col gap-8 bg-card rounded-xl p-6 border shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="w-full md:w-1/2">
-                <div className="relative aspect-video overflow-hidden rounded-lg">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-background/10 to-transparent z-10"></div>
-                  <img 
-                    src={feature.image} 
-                    alt={feature.title} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+              <div className="relative aspect-video overflow-hidden rounded-lg">
+                <div className="absolute inset-0 bg-gradient-to-tr from-background/10 to-transparent z-10"></div>
+                <img 
+                  src={feature.image} 
+                  alt={feature.title} 
+                  className="w-full h-full object-cover"
+                />
               </div>
               
-              <div className="w-full md:w-1/2 flex flex-col items-start">
+              <div className="flex flex-col items-start">
                 <div className="mb-4 text-primary p-2 rounded-lg bg-primary/10">
                   {feature.icon}
                 </div>
