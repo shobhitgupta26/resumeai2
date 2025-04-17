@@ -1,4 +1,3 @@
-
 import { Award, Sparkles, Shield, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ export default function Features() {
     const featureElements = featuresRef.current?.querySelectorAll(".feature-item");
     if (featureElements) {
       featureElements.forEach((el, index) => {
-        el.style.animationDelay = `${0.2 * index}s`;
+        (el as HTMLElement).style.animationDelay = `${0.2 * index}s`;
         observer.observe(el);
       });
     }

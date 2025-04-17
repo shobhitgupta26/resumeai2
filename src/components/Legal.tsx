@@ -19,7 +19,8 @@ export default function Legal() {
     const legalItems = legalRef.current?.querySelectorAll(".legal-item");
     if (legalItems) {
       legalItems.forEach((el, index) => {
-        el.style.animationDelay = `${0.15 * index}s`;
+        // Cast el to HTMLElement to correctly use the style property
+        (el as HTMLElement).style.animationDelay = `${0.15 * index}s`;
         observer.observe(el);
       });
     }
