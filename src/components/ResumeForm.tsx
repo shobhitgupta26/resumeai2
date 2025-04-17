@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import AIResumeAnalyzer from "./AIResumeAnalyzer";
 import AIAnalysisResults from "./AIAnalysisResults";
+import AIImproveField from "./AIImproveField";
 import { AnalysisResultData } from "@/services/analyzerService";
 
 export default function ResumeForm({ updatePreview }) {
@@ -221,18 +223,22 @@ export default function ResumeForm({ updatePreview }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Name</label>
-              <Input
-                placeholder="John Doe"
+              <AIImproveField
                 value={formData.personalInfo.name}
-                onChange={(e) => handleChange("personalInfo", "name", e.target.value)}
+                onChange={(value) => handleChange("personalInfo", "name", value)}
+                fieldName="name"
+                fieldType="input"
+                placeholder="John Doe"
               />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Professional Title</label>
-              <Input
-                placeholder="Frontend Developer"
+              <AIImproveField
                 value={formData.personalInfo.title}
-                onChange={(e) => handleChange("personalInfo", "title", e.target.value)}
+                onChange={(value) => handleChange("personalInfo", "title", value)}
+                fieldName="title"
+                fieldType="input"
+                placeholder="Frontend Developer"
               />
             </div>
           </div>
@@ -279,11 +285,13 @@ export default function ResumeForm({ updatePreview }) {
 
           <div>
             <label className="text-sm font-medium mb-1 block">Professional Summary</label>
-            <Textarea
+            <AIImproveField
+              value={formData.personalInfo.summary}
+              onChange={(value) => handleChange("personalInfo", "summary", value)}
+              fieldName="summary"
+              fieldType="textarea"
               placeholder="Write a professional summary..."
               className="min-h-[120px]"
-              value={formData.personalInfo.summary}
-              onChange={(e) => handleChange("personalInfo", "summary", e.target.value)}
             />
           </div>
         </TabsContent>
@@ -318,12 +326,12 @@ export default function ResumeForm({ updatePreview }) {
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">Position</label>
-                  <Input
-                    placeholder="Your Position"
+                  <AIImproveField
                     value={exp.position}
-                    onChange={(e) =>
-                      handleChange("experience", "position", e.target.value, index)
-                    }
+                    onChange={(value) => handleChange("experience", "position", value, index)}
+                    fieldName="experience-position"
+                    fieldType="input"
+                    placeholder="Your Position"
                   />
                 </div>
               </div>
@@ -364,13 +372,13 @@ export default function ResumeForm({ updatePreview }) {
 
               <div>
                 <label className="text-sm font-medium mb-1 block">Description</label>
-                <Textarea
+                <AIImproveField
+                  value={exp.description}
+                  onChange={(value) => handleChange("experience", "description", value, index)}
+                  fieldName="experience-description"
+                  fieldType="textarea"
                   placeholder="Describe your responsibilities and achievements..."
                   className="min-h-[120px]"
-                  value={exp.description}
-                  onChange={(e) =>
-                    handleChange("experience", "description", e.target.value, index)
-                  }
                 />
               </div>
             </div>
@@ -405,34 +413,34 @@ export default function ResumeForm({ updatePreview }) {
               
               <div>
                 <label className="text-sm font-medium mb-1 block">Institution</label>
-                <Input
-                  placeholder="University Name"
+                <AIImproveField
                   value={edu.institution}
-                  onChange={(e) =>
-                    handleChange("education", "institution", e.target.value, index)
-                  }
+                  onChange={(value) => handleChange("education", "institution", value, index)}
+                  fieldName="education-institution"
+                  fieldType="input"
+                  placeholder="University Name"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-1 block">Degree</label>
-                  <Input
-                    placeholder="Bachelor's, Master's, etc."
+                  <AIImproveField
                     value={edu.degree}
-                    onChange={(e) =>
-                      handleChange("education", "degree", e.target.value, index)
-                    }
+                    onChange={(value) => handleChange("education", "degree", value, index)}
+                    fieldName="education-degree"
+                    fieldType="input"
+                    placeholder="Bachelor's, Master's, etc."
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">Field of Study</label>
-                  <Input
-                    placeholder="Computer Science, Business, etc."
+                  <AIImproveField
                     value={edu.field}
-                    onChange={(e) =>
-                      handleChange("education", "field", e.target.value, index)
-                    }
+                    onChange={(value) => handleChange("education", "field", value, index)}
+                    fieldName="education-field"
+                    fieldType="input"
+                    placeholder="Computer Science, Business, etc."
                   />
                 </div>
               </div>
@@ -462,12 +470,12 @@ export default function ResumeForm({ updatePreview }) {
 
               <div>
                 <label className="text-sm font-medium mb-1 block">Description</label>
-                <Textarea
-                  placeholder="Additional information about your education..."
+                <AIImproveField
                   value={edu.description}
-                  onChange={(e) =>
-                    handleChange("education", "description", e.target.value, index)
-                  }
+                  onChange={(value) => handleChange("education", "description", value, index)}
+                  fieldName="education-description"
+                  fieldType="textarea"
+                  placeholder="Additional information about your education..."
                 />
               </div>
             </div>
@@ -489,10 +497,12 @@ export default function ResumeForm({ updatePreview }) {
             <div className="space-y-3">
               {formData.skills.map((skill, index) => (
                 <div key={index} className="flex gap-2">
-                  <Input
-                    placeholder="e.g. JavaScript, Project Management, etc."
+                  <AIImproveField
                     value={skill}
-                    onChange={(e) => handleArrayChange("skills", index, e.target.value)}
+                    onChange={(value) => handleArrayChange("skills", index, value)}
+                    fieldName="skill"
+                    fieldType="input"
+                    placeholder="e.g. JavaScript, Project Management, etc."
                   />
                   {formData.skills.length > 1 && (
                     <Button
@@ -522,10 +532,12 @@ export default function ResumeForm({ updatePreview }) {
               {formData.certifications.map((cert, index) => (
                 <div key={index} className="space-y-3">
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="e.g. AWS Certified Developer"
+                    <AIImproveField
                       value={cert.name}
-                      onChange={(e) => handleCertificationChange(index, "name", e.target.value)}
+                      onChange={(value) => handleCertificationChange(index, "name", value)}
+                      fieldName="certification-name"
+                      fieldType="input"
+                      placeholder="e.g. AWS Certified Developer"
                     />
                     {formData.certifications.length > 1 && (
                       <Button
