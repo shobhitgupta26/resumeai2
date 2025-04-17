@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +19,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import AIResumeAnalyzer from "./AIResumeAnalyzer";
+import AIAnalysisResults from "./AIAnalysisResults";
+import { AnalysisResultData } from "@/services/analyzerService";
 
 export default function ResumeForm({ updatePreview }) {
   const { toast } = useToast();
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResultData | null>(null);
 
   const [formData, setFormData] = useState({
     personalInfo: {
@@ -60,7 +64,6 @@ export default function ResumeForm({ updatePreview }) {
     }],
   });
 
-  // Send initial data to preview on component mount
   useEffect(() => {
     updatePreview(formData);
   }, []);
@@ -82,7 +85,6 @@ export default function ResumeForm({ updatePreview }) {
     }
     
     setFormData(newData);
-    // Update preview with the new data
     updatePreview(newData);
   };
 
@@ -158,19 +160,42 @@ export default function ResumeForm({ updatePreview }) {
   };
 
   const saveResume = () => {
-    // Logic to save resume would go here
     toast({
       title: "Resume saved",
       description: "Your resume has been saved successfully.",
     });
   };
 
+  const handleAnalysisComplete = (results: AnalysisResultData) => {
+    setAnalysisResults(results);
+    setShowAnalysis(true);
+  };
+
+  const handleCloseAnalysis = () => {
+    setShowAnalysis(false);
+  };
+
   return (
     <div className="w-full">
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Build Your Resume</h2>
-        <Button onClick={saveResume}>Save Resume</Button>
+        <div className="flex gap-2">
+          <Button onClick={saveResume}>Save Resume</Button>
+          <AIResumeAnalyzer 
+            resumeData={formData} 
+            onAnalysisComplete={handleAnalysisComplete} 
+          />
+        </div>
       </div>
+
+      {showAnalysis && (
+        <div className="mb-6">
+          <AIAnalysisResults 
+            results={analysisResults} 
+            onClose={handleCloseAnalysis} 
+          />
+        </div>
+      )}
 
       <Tabs defaultValue="personal" className="w-full">
         <TabsList className="grid grid-cols-4 mb-6">
