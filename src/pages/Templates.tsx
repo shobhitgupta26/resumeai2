@@ -17,37 +17,307 @@ export default function Templates() {
       name: "Professional",
       image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=600",
       popular: true,
-      description: "A clean, professional template that highlights your experience and skills."
+      description: "A clean, professional template that highlights your experience and skills.",
+      prefilledData: {
+        personalInfo: {
+          name: "Michael Anderson",
+          title: "Senior Product Manager",
+          email: "m.anderson@example.com",
+          phone: "(555) 123-4567",
+          website: "michaelanderson.com",
+          summary: "Results-driven Product Manager with 8+ years of experience in tech. Proven track record of launching successful products and driving user growth."
+        },
+        experience: [
+          {
+            company: "Tech Solutions Inc.",
+            position: "Senior Product Manager",
+            startDate: "2020-01",
+            endDate: "",
+            current: true,
+            description: "Led cross-functional teams to deliver enterprise software solutions. Increased user engagement by 45% through data-driven improvements."
+          },
+          {
+            company: "Innovation Labs",
+            position: "Product Manager",
+            startDate: "2017-03",
+            endDate: "2019-12",
+            current: false,
+            description: "Managed the development and launch of mobile applications, resulting in 2M+ downloads and 4.8 star rating."
+          }
+        ],
+        education: [
+          {
+            institution: "Stanford University",
+            degree: "Master of Business Administration",
+            field: "Product Management",
+            startDate: "2015-09",
+            endDate: "2017-06",
+            description: "Focus on Product Strategy and Innovation"
+          }
+        ],
+        skills: ["Product Strategy", "Agile/Scrum", "User Research", "Data Analytics", "Stakeholder Management", "Product Roadmapping"],
+        certifications: [
+          {
+            name: "Professional Scrum Product Owner",
+            url: "https://www.scrum.org/certificates/12345"
+          }
+        ]
+      }
     },
     {
       name: "Modern",
       image: "https://images.unsplash.com/photo-1516383740770-fbcc5ccbece0?auto=format&fit=crop&q=80&w=600",
       popular: false,
-      description: "A contemporary design with a clean layout and bold typography."
+      description: "A contemporary design with a clean layout and bold typography.",
+      prefilledData: {
+        personalInfo: {
+          name: "Sarah Chen",
+          title: "UX/UI Designer",
+          email: "sarah.chen@example.com",
+          phone: "(555) 987-6543",
+          website: "sarahchen.design",
+          summary: "Creative UX/UI Designer passionate about crafting intuitive digital experiences. Combining design thinking with user-centered approaches to create impactful solutions."
+        },
+        experience: [
+          {
+            company: "Design Forward Agency",
+            position: "Senior UX Designer",
+            startDate: "2021-06",
+            endDate: "",
+            current: true,
+            description: "Lead designer for major client projects, implementing design systems and improving user experiences across web and mobile platforms."
+          },
+          {
+            company: "Creative Digital Studio",
+            position: "UI Designer",
+            startDate: "2019-03",
+            endDate: "2021-05",
+            current: false,
+            description: "Created visually stunning interfaces for startups and established brands, focusing on accessibility and user engagement."
+          }
+        ],
+        education: [
+          {
+            institution: "Rhode Island School of Design",
+            degree: "Bachelor of Fine Arts",
+            field: "Graphic Design",
+            startDate: "2015-09",
+            endDate: "2019-05",
+            description: "Focus on Digital Design and Typography"
+          }
+        ],
+        skills: ["UI Design", "User Research", "Figma", "Adobe Creative Suite", "Prototyping", "Design Systems"],
+        certifications: [
+          {
+            name: "Google UX Design Certificate",
+            url: "https://www.coursera.org/certificates/67890"
+          }
+        ]
+      }
     },
     {
       name: "Creative",
       image: "https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&q=80&w=600",
       popular: false,
-      description: "Stand out with this creative template that shows your personality."
+      description: "Stand out with this creative template that shows your personality.",
+      prefilledData: {
+        personalInfo: {
+          name: "Alex Rivera",
+          title: "Art Director & Visual Designer",
+          email: "alex@rivera.design",
+          phone: "(555) 234-5678",
+          website: "riveradesign.co",
+          summary: "Award-winning Art Director with a passion for bold, innovative design. Specialized in branding and creative direction for digital and print media."
+        },
+        experience: [
+          {
+            company: "Creative Minds Studio",
+            position: "Art Director",
+            startDate: "2020-03",
+            endDate: "",
+            current: true,
+            description: "Direct creative vision for major brand campaigns. Led team of designers in developing award-winning visual content."
+          },
+          {
+            company: "Digital Arts Co",
+            position: "Senior Designer",
+            startDate: "2018-01",
+            endDate: "2020-02",
+            current: false,
+            description: "Created compelling visual narratives for diverse client portfolio. Specialized in motion graphics and interactive design."
+          }
+        ],
+        education: [
+          {
+            institution: "Parsons School of Design",
+            degree: "Bachelor of Fine Arts",
+            field: "Communication Design",
+            startDate: "2014-09",
+            endDate: "2018-05",
+            description: "Focus on Typography and Motion Design"
+          }
+        ],
+        skills: ["Art Direction", "Brand Design", "Motion Graphics", "Typography", "Creative Strategy", "Team Leadership"],
+        certifications: [
+          {
+            name: "Adobe Certified Expert",
+            url: "https://adobe.com/certificates/56789"
+          }
+        ]
+      }
     },
     {
       name: "Executive",
       image: "https://images.unsplash.com/photo-1523726491678-bf852e717f6a?auto=format&fit=crop&q=80&w=600",
       popular: true,
-      description: "Perfect for senior professionals and executives with extensive experience."
+      description: "Perfect for senior professionals and executives with extensive experience.",
+      prefilledData: {
+        personalInfo: {
+          name: "Patricia Thompson",
+          title: "Chief Financial Officer",
+          email: "p.thompson@example.com",
+          phone: "(555) 345-6789",
+          website: "linkedin.com/in/pthompson",
+          summary: "Strategic CFO with 15+ years of experience in financial leadership. Expert in driving organizational growth, optimizing operations, and maximizing shareholder value."
+        },
+        experience: [
+          {
+            company: "Global Enterprises Inc.",
+            position: "Chief Financial Officer",
+            startDate: "2019-01",
+            endDate: "",
+            current: true,
+            description: "Oversee financial operations of $500M company. Led successful merger resulting in 30% revenue growth."
+          },
+          {
+            company: "Investment Corp",
+            position: "VP of Finance",
+            startDate: "2015-06",
+            endDate: "2018-12",
+            current: false,
+            description: "Managed $200M investment portfolio. Implemented cost-saving initiatives resulting in $5M annual savings."
+          }
+        ],
+        education: [
+          {
+            institution: "Harvard Business School",
+            degree: "Master of Business Administration",
+            field: "Finance",
+            startDate: "2013-09",
+            endDate: "2015-05",
+            description: "Beta Gamma Sigma Honor Society"
+          }
+        ],
+        skills: ["Financial Strategy", "M&A", "Risk Management", "Corporate Finance", "Strategic Planning", "Board Relations"],
+        certifications: [
+          {
+            name: "Chartered Financial Analyst (CFA)",
+            url: "https://www.cfainstitute.org/cfa/34567"
+          }
+        ]
+      }
     },
     {
       name: "Minimalist",
       image: "https://images.unsplash.com/photo-1512295767273-ac109ac3acfa?auto=format&fit=crop&q=80&w=600",
       popular: false,
-      description: "A clean, minimal design that lets your content speak for itself."
+      description: "A clean, minimal design that lets your content speak for itself.",
+      prefilledData: {
+        personalInfo: {
+          name: "David Park",
+          title: "Software Engineer",
+          email: "david.park@example.com",
+          phone: "(555) 456-7890",
+          website: "davidpark.dev",
+          summary: "Full-stack developer with expertise in modern web technologies. Passionate about clean code and scalable architecture."
+        },
+        experience: [
+          {
+            company: "Tech Innovators",
+            position: "Senior Software Engineer",
+            startDate: "2021-03",
+            endDate: "",
+            current: true,
+            description: "Lead developer for cloud-based applications. Implemented microservices architecture improving system reliability by 40%."
+          },
+          {
+            company: "StartUp Labs",
+            position: "Software Engineer",
+            startDate: "2019-06",
+            endDate: "2021-02",
+            current: false,
+            description: "Developed and maintained multiple web applications using React and Node.js. Reduced page load time by 60%."
+          }
+        ],
+        education: [
+          {
+            institution: "MIT",
+            degree: "Bachelor of Science",
+            field: "Computer Science",
+            startDate: "2015-09",
+            endDate: "2019-05",
+            description: "Focus on Software Engineering and Algorithms"
+          }
+        ],
+        skills: ["JavaScript", "React", "Node.js", "Python", "AWS", "System Design"],
+        certifications: [
+          {
+            name: "AWS Certified Solutions Architect",
+            url: "https://aws.amazon.com/certificates/89012"
+          }
+        ]
+      }
     },
     {
       name: "Technical",
       image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&q=80&w=600",
       popular: false,
-      description: "Ideal for technical roles with sections for projects and skills."
+      description: "Ideal for technical roles with sections for projects and skills.",
+      prefilledData: {
+        personalInfo: {
+          name: "Emily Zhang",
+          title: "Machine Learning Engineer",
+          email: "emily.zhang@example.com",
+          phone: "(555) 567-8901",
+          website: "emilyzhang.ai",
+          summary: "ML Engineer specializing in computer vision and deep learning. Experience in developing and deploying production-ready AI models."
+        },
+        experience: [
+          {
+            company: "AI Solutions Ltd",
+            position: "Senior ML Engineer",
+            startDate: "2020-08",
+            endDate: "",
+            current: true,
+            description: "Lead development of computer vision models for autonomous systems. Achieved 95% accuracy in object detection systems."
+          },
+          {
+            company: "Data Science Corp",
+            position: "ML Engineer",
+            startDate: "2018-05",
+            endDate: "2020-07",
+            current: false,
+            description: "Developed NLP models for text classification and sentiment analysis. Reduced model training time by 60%."
+          }
+        ],
+        education: [
+          {
+            institution: "UC Berkeley",
+            degree: "Master of Science",
+            field: "Computer Science",
+            startDate: "2016-09",
+            endDate: "2018-05",
+            description: "Specialization in Machine Learning and AI"
+          }
+        ],
+        skills: ["Python", "TensorFlow", "PyTorch", "Computer Vision", "Deep Learning", "MLOps"],
+        certifications: [
+          {
+            name: "Google TensorFlow Certificate",
+            url: "https://tensorflow.org/certificates/45678"
+          }
+        ]
+      }
     }
   ];
 
@@ -86,6 +356,17 @@ export default function Templates() {
     };
   }, []);
 
+  const handleTemplateSelection = (template) => {
+    if (!isSignedIn) {
+      navigate("/sign-up");
+      return;
+    }
+    
+    // Store the selected template data in sessionStorage
+    sessionStorage.setItem("selectedTemplate", JSON.stringify(template.prefilledData));
+    navigate("/builder");
+  };
+
   return (
     <div ref={templatesRef} className="min-h-screen flex flex-col dark:bg-gradient-to-b dark:from-background dark:via-background/80 dark:to-background">
       <Navbar />
@@ -122,17 +403,9 @@ export default function Templates() {
                         <Button 
                           size="sm" 
                           className="bg-primary/90 hover:bg-primary"
-                          onClick={() => navigate(isSignedIn ? "/builder" : "/sign-up")}
+                          onClick={() => handleTemplateSelection(template)}
                         >
-                          <Eye className="h-4 w-4 mr-1" /> Preview
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="bg-background/80 backdrop-blur-sm"
-                          onClick={() => navigate(isSignedIn ? "/builder" : "/sign-up")}
-                        >
-                          <Download className="h-4 w-4 mr-1" /> Use
+                          <Eye className="h-4 w-4 mr-1" /> Preview & Use
                         </Button>
                       </div>
                     </div>

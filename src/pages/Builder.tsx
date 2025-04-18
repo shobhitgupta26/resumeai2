@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,40 +16,51 @@ export default function Builder() {
   const { toast } = useToast();
   const resumeRef = useRef(null);
   
-  const [resumeData, setResumeData] = useState({
-    personalInfo: {
-      name: "",
-      title: "",
-      email: "",
-      phone: "",
-      website: "",
-      summary: "",
-    },
-    experience: [
-      {
-        company: "",
-        position: "",
-        startDate: "",
-        endDate: "",
-        current: false,
-        description: "",
+  const [resumeData, setResumeData] = useState(() => {
+    // Try to load template data from sessionStorage
+    const templateData = sessionStorage.getItem("selectedTemplate");
+    if (templateData) {
+      // Clear the session storage after loading
+      sessionStorage.removeItem("selectedTemplate");
+      return JSON.parse(templateData);
+    }
+    
+    // Return default empty state if no template selected
+    return {
+      personalInfo: {
+        name: "",
+        title: "",
+        email: "",
+        phone: "",
+        website: "",
+        summary: "",
       },
-    ],
-    education: [
-      {
-        institution: "",
-        degree: "",
-        field: "",
-        startDate: "",
-        endDate: "",
-        description: "",
-      },
-    ],
-    skills: [""],
-    certifications: [{
-      name: "",
-      url: ""
-    }],
+      experience: [
+        {
+          company: "",
+          position: "",
+          startDate: "",
+          endDate: "",
+          current: false,
+          description: "",
+        },
+      ],
+      education: [
+        {
+          institution: "",
+          degree: "",
+          field: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        },
+      ],
+      skills: [""],
+      certifications: [{
+        name: "",
+        url: ""
+      }],
+    };
   });
 
   const updatePreview = (data) => {
