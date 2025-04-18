@@ -1,16 +1,21 @@
-
+import { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, Star } from "lucide-react";
+import { Download, Eye, Star, Edit, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import { useEffect, useRef } from "react";
+import ResumePreview from "@/components/ResumePreview";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Templates() {
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
   const templatesRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [viewMode, setViewMode] = useState("grid"); // "grid", "preview", "edit"
 
   const templates = [
     {
@@ -356,87 +361,200 @@ export default function Templates() {
     };
   }, []);
 
-  const handleTemplateSelection = (template) => {
+  const handlePreview = (template) => {
+    setSelectedTemplate(template);
+    setViewMode("preview");
+    window.scrollTo(0, 0);
+  };
+
+  const handleEditTemplate = () => {
     if (!isSignedIn) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to edit this resume",
+      });
+      navigate("/sign-up");
+      return;
+    }
+
+    if (selectedTemplate) {
+      setViewMode("edit");
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleUseTemplate = () => {
+    if (!isSignedIn) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to use this template",
+      });
       navigate("/sign-up");
       return;
     }
     
-    // Store the selected template data in sessionStorage
-    sessionStorage.setItem("selectedTemplate", JSON.stringify(template.prefilledData));
-    navigate("/builder");
+    if (selectedTemplate) {
+      sessionStorage.setItem("selectedTemplate", JSON.stringify(selectedTemplate.prefilledData));
+      navigate("/builder");
+    }
+  };
+
+  const handleBackToTemplates = () => {
+    setViewMode("grid");
+    setSelectedTemplate(null);
   };
 
   return (
     <div ref={templatesRef} className="min-h-screen flex flex-col dark:bg-gradient-to-b dark:from-background dark:via-background/80 dark:to-background">
       <Navbar />
       <main className="flex-1 pt-20">
-        <section className="py-24">
-          <div className="container px-4 max-w-7xl">
-            <div className="text-center mb-16 templates-header opacity-0">
-              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
-                Professional Resume Templates
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Choose from our collection of ATS-friendly, professionally designed templates 
-                that will help you land your dream job.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {templates.map((template, index) => (
-                <div 
-                  key={index} 
-                  className="template-item opacity-0 group flex flex-col border bg-card rounded-xl overflow-hidden hover:shadow-md transition-all duration-300"
+        {viewMode === "grid" && (
+          <section className="py-24">
+            <div className="container px-4 max-w-7xl">
+              <div className="text-center mb-16 templates-header opacity-0">
+                <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
+                  Professional Resume Templates
+                </h1>
+                <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                  Choose from our collection of ATS-friendly, professionally designed templates 
+                  that will help you land your dream job.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {templates.map((template, index) => (
+                  <div 
+                    key={index} 
+                    className="template-item opacity-0 group flex flex-col border bg-card rounded-xl overflow-hidden hover:shadow-md transition-all duration-300"
+                  >
+                    <div className="relative">
+                      <div className="aspect-[8.5/11] overflow-hidden bg-muted/30">
+                        <img 
+                          src={template.image} 
+                          alt={template.name} 
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="flex gap-3">
+                          <Button 
+                            size="sm" 
+                            className="bg-primary/90 hover:bg-primary"
+                            onClick={() => handlePreview(template)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" /> Preview
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {template.popular && (
+                        <div className="absolute top-3 right-3 bg-primary text-white text-xs px-2 py-1 rounded-full flex items-center">
+                          <Star className="h-3 w-3 mr-1 fill-white" /> Popular
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold">{template.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-16 text-center">
+                <p className="text-lg mb-6">Ready to create your professional resume?</p>
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => navigate(isSignedIn ? "/builder" : "/sign-up")}
                 >
-                  <div className="relative">
-                    <div className="aspect-[8.5/11] overflow-hidden bg-muted/30">
-                      <img 
-                        src={template.image} 
-                        alt={template.name} 
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <div className="flex gap-3">
-                        <Button 
-                          size="sm" 
-                          className="bg-primary/90 hover:bg-primary"
-                          onClick={() => handleTemplateSelection(template)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" /> Preview & Use
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {template.popular && (
-                      <div className="absolute top-3 right-3 bg-primary text-white text-xs px-2 py-1 rounded-full flex items-center">
-                        <Star className="h-3 w-3 mr-1 fill-white" /> Popular
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold">{template.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
-                  </div>
+                  Get Started Now
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {viewMode === "preview" && selectedTemplate && (
+          <section className="py-12">
+            <div className="container px-4">
+              <div className="flex items-center justify-between mb-8">
+                <Button 
+                  variant="ghost" 
+                  onClick={handleBackToTemplates}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back to Templates
+                </Button>
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleUseTemplate}
+                  >
+                    Use This Template
+                  </Button>
+                  <Button 
+                    onClick={handleEditTemplate}
+                  >
+                    <Edit className="h-4 w-4 mr-2" /> Edit Now
+                  </Button>
                 </div>
-              ))}
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <h2 className="text-2xl font-semibold mb-2">{selectedTemplate.name}</h2>
+                <p className="text-muted-foreground mb-8 max-w-2xl text-center">{selectedTemplate.description}</p>
+                
+                <div className="w-full max-w-[800px] mx-auto border rounded-lg shadow-lg overflow-hidden bg-white">
+                  <ResumePreview data={selectedTemplate.prefilledData} />
+                </div>
+              </div>
             </div>
-            
-            <div className="mt-16 text-center">
-              <p className="text-lg mb-6">Ready to create your professional resume?</p>
-              <Button 
-                size="lg" 
-                className="bg-primary hover:bg-primary/90"
-                onClick={() => navigate(isSignedIn ? "/builder" : "/sign-up")}
-              >
-                Get Started Now
-              </Button>
+          </section>
+        )}
+
+        {viewMode === "edit" && selectedTemplate && (
+          <section className="py-8">
+            <div className="container px-4">
+              <div className="flex items-center justify-between mb-8">
+                <Button 
+                  variant="ghost" 
+                  onClick={handleBackToTemplates}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back to Templates
+                </Button>
+                <Button 
+                  onClick={() => {
+                    sessionStorage.setItem("selectedTemplate", JSON.stringify(selectedTemplate.prefilledData));
+                    navigate("/builder");
+                  }}
+                >
+                  Continue in Full Editor
+                </Button>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <h2 className="text-2xl font-semibold mb-6">Edit Your Resume</h2>
+                
+                <div className="w-full max-w-[800px] mx-auto border rounded-lg shadow-lg overflow-hidden bg-white">
+                  <DirectEditResume 
+                    template={selectedTemplate} 
+                    onSave={(updatedData) => {
+                      const updatedTemplate = {
+                        ...selectedTemplate,
+                        prefilledData: updatedData
+                      };
+                      setSelectedTemplate(updatedTemplate);
+                    }} 
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
       <Footer />
     </div>
