@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
-import { ChevronRight, Stars, Bot, Sparkles } from "lucide-react";
+import { ChevronRight, Stars, Bot } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 export default function Hero() {
@@ -80,9 +80,9 @@ export default function Hero() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-blue/20 rounded-xl blur opacity-75"></div>
             <div className="relative rounded-xl overflow-hidden shadow-2xl">
               <img 
-                src="public/lovable-uploads/bf50b132-c321-4dca-a7db-96acacb9051a.png"
+                src="/lovable-uploads/bf50b132-c321-4dca-a7db-96acacb9051a.png"
                 alt="AI Resume Assistant" 
-                className="w-full h-auto rounded-xl object-cover"
+                className="w-full h-auto rounded-xl"
               />
               <div className="absolute top-4 left-4">
                 <div className="flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium">
@@ -93,13 +93,33 @@ export default function Hero() {
             </div>
           </div>
           
-          <div className="mt-8 grid grid-cols-4 gap-4 px-4">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" alt="Tesla" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg" alt="Spotify" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Pinterest-logo.png" alt="Pinterest" className="h-8 object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" />
+          <div className="mt-12 space-y-4">
+            <div className="grid grid-cols-4 gap-8 items-center justify-items-center">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" 
+                alt="Tesla" 
+                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+              />
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" 
+                alt="Google" 
+                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+              />
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg" 
+                alt="Spotify" 
+                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+              />
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/0/08/Pinterest-logo.png" 
+                alt="Pinterest" 
+                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+              />
+            </div>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Our resumes get people hired at top companies
+            </p>
           </div>
-          <p className="text-center text-xs text-muted-foreground mt-2">Our resumes get people hired at top companies</p>
         </div>
       </div>
 
