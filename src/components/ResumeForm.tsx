@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,8 +19,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import AIResumeAnalyzer from "./AIResumeAnalyzer";
-import AIAnalysisResults from "./AIAnalysisResults";
 import AIImproveField from "./AIImproveField";
 import { AnalysisResultData } from "@/services/analyzerService";
 
@@ -183,21 +180,8 @@ export default function ResumeForm({ updatePreview }) {
         <h2 className="text-2xl font-semibold">Build Your Resume</h2>
         <div className="flex gap-2">
           <Button onClick={saveResume}>Save Resume</Button>
-          <AIResumeAnalyzer 
-            resumeData={formData} 
-            onAnalysisComplete={handleAnalysisComplete} 
-          />
         </div>
       </div>
-
-      {showAnalysis && (
-        <div className="mb-6">
-          <AIAnalysisResults 
-            results={analysisResults} 
-            onClose={handleCloseAnalysis} 
-          />
-        </div>
-      )}
 
       <Tabs defaultValue="personal" className="w-full">
         <TabsList className="grid grid-cols-4 mb-6">
