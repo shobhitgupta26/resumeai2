@@ -77,17 +77,24 @@ export default function Hero() {
 
         <div className="lg:w-1/2 mt-12 lg:mt-0 animate-on-scroll opacity-0" style={{ animationDelay: "1s" }}>
           <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-blue/20 rounded-xl blur opacity-75"></div>
-            <div className="relative rounded-xl overflow-hidden shadow-2xl">
-              <img 
-                src="/lovable-uploads/bf50b132-c321-4dca-a7db-96acacb9051a.png"
-                alt="AI Resume Assistant" 
-                className="w-full h-auto rounded-xl"
-              />
-              <div className="absolute top-4 left-4">
-                <div className="flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium">
-                  <Bot className="h-4 w-4 text-primary" />
-                  <span>AI Assistant</span>
+            {/* Ambient lighting effects */}
+            <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-primary/10 to-blue/10 rounded-[2rem] blur-2xl"></div>
+            
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-purple-500/30 rounded-xl blur opacity-75"></div>
+              <div className="relative rounded-xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=2000&q=80"
+                  alt="AI Resume Assistant" 
+                  className="w-full h-auto rounded-xl object-cover"
+                />
+                <div className="absolute top-4 left-4">
+                  <div className="flex items-center gap-2 bg-background/80 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium">
+                    <Bot className="h-4 w-4 text-primary" />
+                    <span>AI Assistant</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -123,9 +130,9 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Background elements */}
-      <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue/5 rounded-full blur-3xl"></div>
+      {/* Enhanced background elements */}
+      <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
     </section>
   );
 }
