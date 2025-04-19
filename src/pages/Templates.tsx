@@ -6,6 +6,7 @@ import { Download, Eye, Star, Edit, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import ResumePreview from "@/components/ResumePreview";
+import DirectEditResume from "@/components/DirectEditResume";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Templates() {

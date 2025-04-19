@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import Navbar from "@/components/Navbar";
@@ -17,15 +16,12 @@ export default function Builder() {
   const resumeRef = useRef(null);
   
   const [resumeData, setResumeData] = useState(() => {
-    // Try to load template data from sessionStorage
     const templateData = sessionStorage.getItem("selectedTemplate");
     if (templateData) {
-      // Clear the session storage after loading
       sessionStorage.removeItem("selectedTemplate");
       return JSON.parse(templateData);
     }
     
-    // Return default empty state if no template selected
     return {
       personalInfo: {
         name: "",
@@ -93,14 +89,13 @@ export default function Builder() {
       
       const imgData = canvas.toDataURL('image/png');
       
-      // Calculate dimensions for PDF (A4 format)
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
       
-      const imgWidth = 210; // A4 width in mm
+      const imgWidth = 210;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
@@ -127,7 +122,7 @@ export default function Builder() {
         <div className="container px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-1/2">
-              <ResumeForm updatePreview={updatePreview} initialData={resumeData} />
+              <ResumeForm updatePreview={updatePreview} data={resumeData} />
             </div>
 
             <div className="w-full lg:w-1/2 sticky top-24 h-fit">
