@@ -153,23 +153,28 @@ export default {
         "logo-glow": {
           "0%": { 
             filter: "grayscale(1)",
-            transform: "scale(1)"
+            transform: "scale(1)",
+            opacity: "0.7"
           },
           "25%": { 
             filter: "grayscale(0)",
-            transform: "scale(1.1)"
+            transform: "scale(1.1)",
+            opacity: "1"
           },
           "50%": { 
             filter: "grayscale(0)",
-            transform: "scale(1.1)"
+            transform: "scale(1.1)",
+            opacity: "1"
           },
           "75%": { 
-            filter: "grayscale(1)",
-            transform: "scale(1)"
+            filter: "grayscale(0.5)",
+            transform: "scale(1.05)",
+            opacity: "0.9"
           },
           "100%": { 
             filter: "grayscale(1)",
-            transform: "scale(1)"
+            transform: "scale(1)",
+            opacity: "0.7"
           }
         }
       },

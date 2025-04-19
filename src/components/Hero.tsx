@@ -105,22 +105,26 @@ export default function Hero() {
               <img 
                 src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" 
                 alt="Tesla" 
-                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+                className="h-6 w-auto object-contain animate-logo-glow" 
+                style={{ animationDelay: "0s" }}
               />
               <img 
                 src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" 
                 alt="Google" 
-                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+                className="h-6 w-auto object-contain animate-logo-glow" 
+                style={{ animationDelay: "1s" }}
               />
               <img 
                 src="https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg" 
                 alt="Spotify" 
-                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+                className="h-6 w-auto object-contain animate-logo-glow" 
+                style={{ animationDelay: "2s" }}
               />
               <img 
                 src="https://upload.wikimedia.org/wikipedia/commons/0/08/Pinterest-logo.png" 
                 alt="Pinterest" 
-                className="h-6 w-auto object-contain grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all" 
+                className="h-6 w-auto object-contain animate-logo-glow" 
+                style={{ animationDelay: "3s" }}
               />
             </div>
             <p className="text-center text-sm text-muted-foreground mt-4">
