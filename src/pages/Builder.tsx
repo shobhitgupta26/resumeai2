@@ -123,7 +123,7 @@ export default function Builder() {
         <div className="container px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-1/2">
-              <ResumeForm updatePreview={updatePreview} initialData={resumeData} />
+              <ResumeForm updatePreview={updatePreview} />
             </div>
 
             <div className="w-full lg:w-1/2 sticky top-24 h-fit">
