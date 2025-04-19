@@ -45,9 +45,9 @@ export default function FileUpload({
   };
 
   return (
-    <div className="mb-8 p-8 border rounded-lg bg-card shadow-sm hover:shadow-md transition-all">
+    <div className="mb-8 p-8 border rounded-lg bg-card shadow-sm hover:shadow-md transition-all dark:bg-gray-800/80 dark:border-gray-700">
       <div className="text-center mb-6">
-        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/20 to-purple-400/20 flex items-center justify-center mx-auto mb-3 text-primary">
+        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-400/20 flex items-center justify-center mx-auto mb-3 text-indigo-500 dark:text-indigo-400">
           <FileUp className="h-8 w-8" />
         </div>
         <h2 className="text-2xl font-medium mb-2">Upload Your Resume</h2>
@@ -65,13 +65,13 @@ export default function FileUpload({
             type="file"
             onChange={handleFileChange}
             accept=".pdf,.docx,.doc,.txt"
-            className="cursor-pointer border-dashed hover:border-primary/50 focus:border-primary/50 transition-colors"
+            className="cursor-pointer border-dashed hover:border-indigo-500/50 focus:border-indigo-500/50 transition-colors dark:bg-gray-800 dark:text-gray-300"
           />
         </div>
         <Button 
           onClick={handleAnalyze} 
           disabled={!file || loading}
-          className="w-full sm:w-auto button-gradient shadow-md"
+          className="w-full sm:w-auto shadow-md bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white"
           size="lg"
         >
           {loading ? (
@@ -99,18 +99,18 @@ export default function FileUpload({
       {loading && (
         <div className="mt-6">
           <div className="flex items-center justify-center space-x-4 text-sm text-muted-foreground">
-            <div className={`flex items-center space-x-2 ${processingStage === "Reading file" ? "text-primary font-medium" : ""}`}>
-              <div className={`h-2 w-2 rounded-full ${processingStage === "Reading file" ? "bg-primary animate-pulse" : "bg-muted-foreground"}`}></div>
+            <div className={`flex items-center space-x-2 ${processingStage === "Reading file" ? "text-indigo-500 dark:text-indigo-400 font-medium" : ""}`}>
+              <div className={`h-2 w-2 rounded-full ${processingStage === "Reading file" ? "bg-indigo-500 dark:bg-indigo-400 animate-pulse" : "bg-muted-foreground"}`}></div>
               <span>Reading file</span>
             </div>
             <div className="h-0.5 w-6 bg-muted"></div>
-            <div className={`flex items-center space-x-2 ${processingStage === "Extracting text" ? "text-primary font-medium" : ""}`}>
-              <div className={`h-2 w-2 rounded-full ${processingStage === "Extracting text" ? "bg-primary animate-pulse" : "bg-muted-foreground"}`}></div>
+            <div className={`flex items-center space-x-2 ${processingStage === "Extracting text" ? "text-indigo-500 dark:text-indigo-400 font-medium" : ""}`}>
+              <div className={`h-2 w-2 rounded-full ${processingStage === "Extracting text" ? "bg-indigo-500 dark:bg-indigo-400 animate-pulse" : "bg-muted-foreground"}`}></div>
               <span>Extracting text</span>
             </div>
             <div className="h-0.5 w-6 bg-muted"></div>
-            <div className={`flex items-center space-x-2 ${processingStage === "Analyzing with AI" ? "text-primary font-medium" : ""}`}>
-              <div className={`h-2 w-2 rounded-full ${processingStage === "Analyzing with AI" ? "bg-primary animate-pulse" : "bg-muted-foreground"}`}></div>
+            <div className={`flex items-center space-x-2 ${processingStage === "Analyzing with AI" ? "text-indigo-500 dark:text-indigo-400 font-medium" : ""}`}>
+              <div className={`h-2 w-2 rounded-full ${processingStage === "Analyzing with AI" ? "bg-indigo-500 dark:bg-indigo-400 animate-pulse" : "bg-muted-foreground"}`}></div>
               <span>AI analysis</span>
             </div>
           </div>

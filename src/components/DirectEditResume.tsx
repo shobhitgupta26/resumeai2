@@ -22,7 +22,7 @@ const DirectEditResume = ({ template, onSave }: DirectEditResumeProps) => {
       const editableElements = resumeRef.current.querySelectorAll('.editable');
       editableElements.forEach(element => {
         element.setAttribute('contenteditable', 'true');
-        element.classList.add('hover:bg-blue-50', 'focus:bg-blue-50', 'focus:outline-none', 'px-1', 'transition-colors', 'rounded');
+        element.classList.add('hover:bg-blue-50', 'focus:bg-blue-50', 'focus:outline-none', 'px-1', 'transition-colors', 'rounded', 'dark:hover:bg-blue-900/30', 'dark:focus:bg-blue-900/30');
       });
     }
   }, [resumeRef.current]);
@@ -134,7 +134,7 @@ const DirectEditResume = ({ template, onSave }: DirectEditResumeProps) => {
       const editableElements = resumeRef.current.querySelectorAll('.editable');
       editableElements.forEach(element => {
         element.removeAttribute('contenteditable');
-        element.classList.remove('hover:bg-blue-50', 'focus:bg-blue-50');
+        element.classList.remove('hover:bg-blue-50', 'focus:bg-blue-50', 'dark:hover:bg-blue-900/30', 'dark:focus:bg-blue-900/30');
       });
 
       const element = resumeRef.current;
@@ -163,7 +163,7 @@ const DirectEditResume = ({ template, onSave }: DirectEditResumeProps) => {
       // Restore contenteditable and styling
       editableElements.forEach(element => {
         element.setAttribute('contenteditable', 'true');
-        element.classList.add('hover:bg-blue-50', 'focus:bg-blue-50');
+        element.classList.add('hover:bg-blue-50', 'focus:bg-blue-50', 'dark:hover:bg-blue-900/30', 'dark:focus:bg-blue-900/30');
       });
       
       toast({
@@ -192,7 +192,7 @@ const DirectEditResume = ({ template, onSave }: DirectEditResumeProps) => {
 
   return (
     <div className="relative">
-      <div className="sticky top-0 z-10 bg-white border-b p-4 flex justify-between items-center">
+      <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b p-4 flex justify-between items-center">
         <div>
           <h3 className="text-sm font-medium">Click on any text to edit</h3>
           <p className="text-xs text-muted-foreground">Directly edit your resume on the page</p>
@@ -209,17 +209,17 @@ const DirectEditResume = ({ template, onSave }: DirectEditResumeProps) => {
         </div>
       </div>
 
-      <div className="p-8 w-full" ref={resumeRef} onBlur={handleContentChange}>
+      <div className="p-8 w-full bg-white dark:bg-gray-900" ref={resumeRef} onBlur={handleContentChange}>
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1 editable" data-field="name">
+          <h1 className="text-2xl font-bold mb-1 editable text-black dark:text-white" data-field="name">
             {resumeData.personalInfo?.name || 'Your Name'}
           </h1>
-          <h2 className="text-lg text-gray-700 mb-3 editable" data-field="title">
+          <h2 className="text-lg text-gray-700 dark:text-gray-300 mb-3 editable" data-field="title">
             {resumeData.personalInfo?.title || 'Professional Title'}
           </h2>
           
-          <div className="flex flex-wrap gap-3 text-sm text-gray-600">
+          <div className="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center gap-1">
               <span className="editable" data-field="email">{resumeData.personalInfo?.email}</span>
             </div>
@@ -234,63 +234,63 @@ const DirectEditResume = ({ template, onSave }: DirectEditResumeProps) => {
 
         {/* Summary */}
         <div className="mb-6">
-          <h3 className="text-md font-bold border-b pb-1 mb-2">Professional Summary</h3>
-          <p className="text-sm editable" data-field="summary">{resumeData.personalInfo?.summary}</p>
+          <h3 className="text-md font-bold border-b pb-1 mb-2 text-black dark:text-white">Professional Summary</h3>
+          <p className="text-sm editable text-gray-800 dark:text-gray-300" data-field="summary">{resumeData.personalInfo?.summary}</p>
         </div>
 
         {/* Experience */}
         <div className="mb-6">
-          <h3 className="text-md font-bold border-b pb-1 mb-2">Experience</h3>
+          <h3 className="text-md font-bold border-b pb-1 mb-2 text-black dark:text-white">Experience</h3>
           
           {resumeData.experience.map((exp, index) => (
             <div key={index} className="mb-4" data-section="experience">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="text-sm font-semibold editable" data-field="position">{exp.position}</h4>
-                  <h5 className="text-sm editable" data-field="company">{exp.company}</h5>
+                  <h4 className="text-sm font-semibold editable text-black dark:text-white" data-field="position">{exp.position}</h4>
+                  <h5 className="text-sm editable text-gray-700 dark:text-gray-300" data-field="company">{exp.company}</h5>
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-gray-600 dark:text-gray-400">
                   {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                 </div>
               </div>
-              <p className="text-xs mt-1 editable" data-field="description">{exp.description}</p>
+              <p className="text-xs mt-1 editable text-gray-800 dark:text-gray-300" data-field="description">{exp.description}</p>
             </div>
           ))}
         </div>
 
         {/* Education */}
         <div className="mb-6">
-          <h3 className="text-md font-bold border-b pb-1 mb-2">Education</h3>
+          <h3 className="text-md font-bold border-b pb-1 mb-2 text-black dark:text-white">Education</h3>
           
           {resumeData.education.map((edu, index) => (
             <div key={index} className="mb-4" data-section="education">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="text-sm font-semibold editable" data-field="institution">{edu.institution}</h4>
-                  <h5 className="text-sm">
+                  <h4 className="text-sm font-semibold editable text-black dark:text-white" data-field="institution">{edu.institution}</h4>
+                  <h5 className="text-sm text-gray-700 dark:text-gray-300">
                     <span className="editable" data-field="degree">{edu.degree}</span>
                     {edu.field && (
                       <>, <span className="editable" data-field="field">{edu.field}</span></>
                     )}
                   </h5>
                 </div>
-                <div className="text-xs text-gray-600">
+                <div className="text-xs text-gray-600 dark:text-gray-400">
                   {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
                 </div>
               </div>
-              <p className="text-xs mt-1 editable" data-field="description">{edu.description}</p>
+              <p className="text-xs mt-1 editable text-gray-800 dark:text-gray-300" data-field="description">{edu.description}</p>
             </div>
           ))}
         </div>
 
         {/* Skills */}
         <div className="mb-6">
-          <h3 className="text-md font-bold border-b pb-1 mb-2">Skills</h3>
+          <h3 className="text-md font-bold border-b pb-1 mb-2 text-black dark:text-white">Skills</h3>
           <div className="flex flex-wrap gap-2">
             {resumeData.skills.map((skill, index) => (
               <span 
                 key={index}
-                className="text-xs px-2 py-1 bg-gray-100 rounded-md editable"
+                className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md editable text-gray-800 dark:text-gray-200"
                 data-field="skill"
               >
                 {skill}
@@ -301,8 +301,8 @@ const DirectEditResume = ({ template, onSave }: DirectEditResumeProps) => {
 
         {/* Certifications */}
         <div>
-          <h3 className="text-md font-bold border-b pb-1 mb-2">Certifications & Awards</h3>
-          <ul className="list-disc list-inside text-sm">
+          <h3 className="text-md font-bold border-b pb-1 mb-2 text-black dark:text-white">Certifications & Awards</h3>
+          <ul className="list-disc list-inside text-sm text-gray-800 dark:text-gray-300">
             {resumeData.certifications.map((cert, index) => (
               <li key={index} data-section="certification">
                 <span className="editable" data-field="name">{cert.name}</span>
