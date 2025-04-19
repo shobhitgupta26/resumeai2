@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -150,19 +149,42 @@ export default {
 				scale: {
 					'0%': { transform: 'scale(0.95)' },
 					'100%': { transform: 'scale(1)' }
-				}
-			},
-			animation: {
-				"accordion-down": "accordion-down 0.2s ease-out",
-				"accordion-up": "accordion-up 0.2s ease-out",
-				"fade-in": "fadeIn 0.5s ease-in-out",
-				"slide-in": "slideIn 0.5s ease-in-out",
-				"pulse": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-				"glow": "glow 2s ease-in-out infinite",
-				"float": "float 3s ease-in-out infinite",
-				"scale": "scale 0.3s ease-in-out",
-			},
-		}
-	},
+				},
+        "logo-glow": {
+          "0%": { 
+            filter: "grayscale(1)",
+            transform: "scale(1)"
+          },
+          "25%": { 
+            filter: "grayscale(0)",
+            transform: "scale(1.1)"
+          },
+          "50%": { 
+            filter: "grayscale(0)",
+            transform: "scale(1.1)"
+          },
+          "75%": { 
+            filter: "grayscale(1)",
+            transform: "scale(1)"
+          },
+          "100%": { 
+            filter: "grayscale(1)",
+            transform: "scale(1)"
+          }
+        }
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fadeIn 0.5s ease-in-out",
+        "slide-in": "slideIn 0.5s ease-in-out",
+        "pulse": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "glow": "glow 2s ease-in-out infinite",
+        "float": "float 3s ease-in-out infinite",
+        "scale": "scale 0.3s ease-in-out",
+        "logo-glow": "logo-glow 4s ease-in-out infinite"
+      },
+    },
+  },
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
