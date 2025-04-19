@@ -1,387 +1,192 @@
-import { useState, useRef, useEffect } from "react";
+
+import { useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, Star, Edit, ArrowLeft } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Briefcase, Download, FileText, GraduationCap, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
-import ResumePreview from "@/components/ResumePreview";
-import DirectEditResume from "@/components/DirectEditResume";
 import { useToast } from "@/hooks/use-toast";
+import DirectEditResume from "@/components/DirectEditResume";
 
 export default function Templates() {
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
-  const templatesRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [viewMode, setViewMode] = useState("grid"); // "grid", "preview", "edit"
+  const [selectedTemplate, setSelectedTemplate] = useState("modern");
 
   const templates = [
     {
-      name: "Professional",
-      image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=600",
-      popular: true,
-      description: "A clean, professional template that highlights your experience and skills.",
+      id: "modern",
+      name: "Modern",
+      description: "Clean and professional design with a touch of color",
+      previewImageUrl: "/placeholder.svg",
       prefilledData: {
         personalInfo: {
-          name: "Michael Anderson",
-          title: "Senior Product Manager",
-          email: "m.anderson@example.com",
+          name: "Alex Johnson",
+          title: "Senior Frontend Developer",
+          email: "alex.johnson@example.com",
           phone: "(555) 123-4567",
-          website: "michaelanderson.com",
-          summary: "Results-driven Product Manager with 8+ years of experience in tech. Proven track record of launching successful products and driving user growth."
+          website: "alexjohnson.dev",
+          summary: "Experienced frontend developer with 5+ years creating responsive, user-friendly web applications. Specialized in React, TypeScript, and modern CSS frameworks.",
         },
         experience: [
           {
             company: "Tech Solutions Inc.",
-            position: "Senior Product Manager",
-            startDate: "2020-01",
+            position: "Senior Frontend Developer",
+            startDate: "2021-03-01",
             endDate: "",
             current: true,
-            description: "Led cross-functional teams to deliver enterprise software solutions. Increased user engagement by 45% through data-driven improvements."
+            description: "Lead frontend development for multiple client projects, implementing responsive designs and optimizing performance. Mentored junior developers and introduced best practices.",
           },
           {
-            company: "Innovation Labs",
-            position: "Product Manager",
-            startDate: "2017-03",
-            endDate: "2019-12",
+            company: "WebDev Studio",
+            position: "Frontend Developer",
+            startDate: "2018-06-01",
+            endDate: "2021-02-28",
             current: false,
-            description: "Managed the development and launch of mobile applications, resulting in 2M+ downloads and 4.8 star rating."
+            description: "Developed and maintained client websites using React, Redux, and CSS-in-JS. Collaborated with design team to implement pixel-perfect UIs.",
           }
         ],
         education: [
           {
-            institution: "Stanford University",
-            degree: "Master of Business Administration",
-            field: "Product Management",
-            startDate: "2015-09",
-            endDate: "2017-06",
-            description: "Focus on Product Strategy and Innovation"
-          }
-        ],
-        skills: ["Product Strategy", "Agile/Scrum", "User Research", "Data Analytics", "Stakeholder Management", "Product Roadmapping"],
-        certifications: [
-          {
-            name: "Professional Scrum Product Owner",
-            url: "https://www.scrum.org/certificates/12345"
-          }
-        ]
-      }
-    },
-    {
-      name: "Modern",
-      image: "https://images.unsplash.com/photo-1516383740770-fbcc5ccbece0?auto=format&fit=crop&q=80&w=600",
-      popular: false,
-      description: "A contemporary design with a clean layout and bold typography.",
-      prefilledData: {
-        personalInfo: {
-          name: "Sarah Chen",
-          title: "UX/UI Designer",
-          email: "sarah.chen@example.com",
-          phone: "(555) 987-6543",
-          website: "sarahchen.design",
-          summary: "Creative UX/UI Designer passionate about crafting intuitive digital experiences. Combining design thinking with user-centered approaches to create impactful solutions."
-        },
-        experience: [
-          {
-            company: "Design Forward Agency",
-            position: "Senior UX Designer",
-            startDate: "2021-06",
-            endDate: "",
-            current: true,
-            description: "Lead designer for major client projects, implementing design systems and improving user experiences across web and mobile platforms."
-          },
-          {
-            company: "Creative Digital Studio",
-            position: "UI Designer",
-            startDate: "2019-03",
-            endDate: "2021-05",
-            current: false,
-            description: "Created visually stunning interfaces for startups and established brands, focusing on accessibility and user engagement."
-          }
-        ],
-        education: [
-          {
-            institution: "Rhode Island School of Design",
-            degree: "Bachelor of Fine Arts",
-            field: "Graphic Design",
-            startDate: "2015-09",
-            endDate: "2019-05",
-            description: "Focus on Digital Design and Typography"
-          }
-        ],
-        skills: ["UI Design", "User Research", "Figma", "Adobe Creative Suite", "Prototyping", "Design Systems"],
-        certifications: [
-          {
-            name: "Google UX Design Certificate",
-            url: "https://www.coursera.org/certificates/67890"
-          }
-        ]
-      }
-    },
-    {
-      name: "Creative",
-      image: "https://images.unsplash.com/photo-1508780709619-79562169bc64?auto=format&fit=crop&q=80&w=600",
-      popular: false,
-      description: "Stand out with this creative template that shows your personality.",
-      prefilledData: {
-        personalInfo: {
-          name: "Alex Rivera",
-          title: "Art Director & Visual Designer",
-          email: "alex@rivera.design",
-          phone: "(555) 234-5678",
-          website: "riveradesign.co",
-          summary: "Award-winning Art Director with a passion for bold, innovative design. Specialized in branding and creative direction for digital and print media."
-        },
-        experience: [
-          {
-            company: "Creative Minds Studio",
-            position: "Art Director",
-            startDate: "2020-03",
-            endDate: "",
-            current: true,
-            description: "Direct creative vision for major brand campaigns. Led team of designers in developing award-winning visual content."
-          },
-          {
-            company: "Digital Arts Co",
-            position: "Senior Designer",
-            startDate: "2018-01",
-            endDate: "2020-02",
-            current: false,
-            description: "Created compelling visual narratives for diverse client portfolio. Specialized in motion graphics and interactive design."
-          }
-        ],
-        education: [
-          {
-            institution: "Parsons School of Design",
-            degree: "Bachelor of Fine Arts",
-            field: "Communication Design",
-            startDate: "2014-09",
-            endDate: "2018-05",
-            description: "Focus on Typography and Motion Design"
-          }
-        ],
-        skills: ["Art Direction", "Brand Design", "Motion Graphics", "Typography", "Creative Strategy", "Team Leadership"],
-        certifications: [
-          {
-            name: "Adobe Certified Expert",
-            url: "https://adobe.com/certificates/56789"
-          }
-        ]
-      }
-    },
-    {
-      name: "Executive",
-      image: "https://images.unsplash.com/photo-1523726491678-bf852e717f6a?auto=format&fit=crop&q=80&w=600",
-      popular: true,
-      description: "Perfect for senior professionals and executives with extensive experience.",
-      prefilledData: {
-        personalInfo: {
-          name: "Patricia Thompson",
-          title: "Chief Financial Officer",
-          email: "p.thompson@example.com",
-          phone: "(555) 345-6789",
-          website: "linkedin.com/in/pthompson",
-          summary: "Strategic CFO with 15+ years of experience in financial leadership. Expert in driving organizational growth, optimizing operations, and maximizing shareholder value."
-        },
-        experience: [
-          {
-            company: "Global Enterprises Inc.",
-            position: "Chief Financial Officer",
-            startDate: "2019-01",
-            endDate: "",
-            current: true,
-            description: "Oversee financial operations of $500M company. Led successful merger resulting in 30% revenue growth."
-          },
-          {
-            company: "Investment Corp",
-            position: "VP of Finance",
-            startDate: "2015-06",
-            endDate: "2018-12",
-            current: false,
-            description: "Managed $200M investment portfolio. Implemented cost-saving initiatives resulting in $5M annual savings."
-          }
-        ],
-        education: [
-          {
-            institution: "Harvard Business School",
-            degree: "Master of Business Administration",
-            field: "Finance",
-            startDate: "2013-09",
-            endDate: "2015-05",
-            description: "Beta Gamma Sigma Honor Society"
-          }
-        ],
-        skills: ["Financial Strategy", "M&A", "Risk Management", "Corporate Finance", "Strategic Planning", "Board Relations"],
-        certifications: [
-          {
-            name: "Chartered Financial Analyst (CFA)",
-            url: "https://www.cfainstitute.org/cfa/34567"
-          }
-        ]
-      }
-    },
-    {
-      name: "Minimalist",
-      image: "https://images.unsplash.com/photo-1512295767273-ac109ac3acfa?auto=format&fit=crop&q=80&w=600",
-      popular: false,
-      description: "A clean, minimal design that lets your content speak for itself.",
-      prefilledData: {
-        personalInfo: {
-          name: "David Park",
-          title: "Software Engineer",
-          email: "david.park@example.com",
-          phone: "(555) 456-7890",
-          website: "davidpark.dev",
-          summary: "Full-stack developer with expertise in modern web technologies. Passionate about clean code and scalable architecture."
-        },
-        experience: [
-          {
-            company: "Tech Innovators",
-            position: "Senior Software Engineer",
-            startDate: "2021-03",
-            endDate: "",
-            current: true,
-            description: "Lead developer for cloud-based applications. Implemented microservices architecture improving system reliability by 40%."
-          },
-          {
-            company: "StartUp Labs",
-            position: "Software Engineer",
-            startDate: "2019-06",
-            endDate: "2021-02",
-            current: false,
-            description: "Developed and maintained multiple web applications using React and Node.js. Reduced page load time by 60%."
-          }
-        ],
-        education: [
-          {
-            institution: "MIT",
+            institution: "University of Technology",
             degree: "Bachelor of Science",
             field: "Computer Science",
-            startDate: "2015-09",
-            endDate: "2019-05",
-            description: "Focus on Software Engineering and Algorithms"
+            startDate: "2014-09-01",
+            endDate: "2018-05-01",
+            description: "Graduated with honors. Specialized in web technologies and user experience design.",
           }
         ],
-        skills: ["JavaScript", "React", "Node.js", "Python", "AWS", "System Design"],
+        skills: ["React", "TypeScript", "JavaScript", "HTML/CSS", "Redux", "Tailwind CSS", "Responsive Design", "Git", "Jest", "Cypress"],
         certifications: [
           {
-            name: "AWS Certified Solutions Architect",
-            url: "https://aws.amazon.com/certificates/89012"
+            name: "AWS Certified Developer",
+            url: "https://aws.amazon.com/certification/certified-developer-associate/"
+          },
+          {
+            name: "Meta Frontend Developer Professional Certificate",
+            url: "https://www.coursera.org/professional-certificates/meta-front-end-developer"
           }
-        ]
+        ],
       }
     },
     {
-      name: "Technical",
-      image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&q=80&w=600",
-      popular: false,
-      description: "Ideal for technical roles with sections for projects and skills.",
+      id: "minimal",
+      name: "Minimal",
+      description: "Simple and elegant design that puts content first",
+      previewImageUrl: "/placeholder.svg",
       prefilledData: {
         personalInfo: {
-          name: "Emily Zhang",
-          title: "Machine Learning Engineer",
-          email: "emily.zhang@example.com",
-          phone: "(555) 567-8901",
-          website: "emilyzhang.ai",
-          summary: "ML Engineer specializing in computer vision and deep learning. Experience in developing and deploying production-ready AI models."
+          name: "Morgan Smith",
+          title: "UX/UI Designer",
+          email: "morgan.smith@example.com",
+          phone: "(555) 987-6543",
+          website: "morgandesigns.co",
+          summary: "Creative UX/UI designer with a passion for creating intuitive, accessible, and beautiful digital experiences. Proficient in user research, wireframing, and prototyping.",
         },
         experience: [
           {
-            company: "AI Solutions Ltd",
-            position: "Senior ML Engineer",
-            startDate: "2020-08",
+            company: "DesignHub Agency",
+            position: "Senior UX/UI Designer",
+            startDate: "2020-01-15",
             endDate: "",
             current: true,
-            description: "Lead development of computer vision models for autonomous systems. Achieved 95% accuracy in object detection systems."
+            description: "Lead design processes for enterprise clients, creating wireframes, prototypes, and final designs. Conducted user research and usability testing to improve product experiences.",
           },
           {
-            company: "Data Science Corp",
-            position: "ML Engineer",
-            startDate: "2018-05",
-            endDate: "2020-07",
+            company: "Creative Solutions",
+            position: "UI Designer",
+            startDate: "2017-08-01",
+            endDate: "2019-12-31",
             current: false,
-            description: "Developed NLP models for text classification and sentiment analysis. Reduced model training time by 60%."
+            description: "Designed user interfaces for web and mobile applications. Collaborated with developers to ensure design implementation matched specifications.",
           }
         ],
         education: [
           {
-            institution: "UC Berkeley",
-            degree: "Master of Science",
-            field: "Computer Science",
-            startDate: "2016-09",
-            endDate: "2018-05",
-            description: "Specialization in Machine Learning and AI"
+            institution: "Design Institute",
+            degree: "Bachelor of Arts",
+            field: "Interaction Design",
+            startDate: "2013-09-01",
+            endDate: "2017-06-30",
+            description: "Focused on user experience, interaction design, and visual communication. Graduated with distinction.",
           }
         ],
-        skills: ["Python", "TensorFlow", "PyTorch", "Computer Vision", "Deep Learning", "MLOps"],
+        skills: ["Figma", "Adobe XD", "User Research", "Wireframing", "Prototyping", "UI Design", "Visual Design", "Design Systems", "Accessibility", "User Testing"],
         certifications: [
           {
-            name: "Google TensorFlow Certificate",
-            url: "https://tensorflow.org/certificates/45678"
+            name: "Google UX Design Professional Certificate",
+            url: "https://www.coursera.org/professional-certificates/google-ux-design"
+          },
+          {
+            name: "Certified Usability Analyst",
+            url: "https://www.humanfactors.com/certification/"
           }
-        ]
+        ],
+      }
+    },
+    {
+      id: "professional",
+      name: "Professional",
+      description: "Traditional format ideal for corporate environments",
+      previewImageUrl: "/placeholder.svg",
+      prefilledData: {
+        personalInfo: {
+          name: "Taylor Wilson",
+          title: "Marketing Manager",
+          email: "taylor.wilson@example.com",
+          phone: "(555) 456-7890",
+          website: "taylorwilson.marketing",
+          summary: "Results-driven marketing professional with expertise in digital marketing strategies, brand development, and campaign management. Proven track record of increasing conversion rates and brand awareness.",
+        },
+        experience: [
+          {
+            company: "Global Marketing Inc.",
+            position: "Marketing Manager",
+            startDate: "2019-05-01",
+            endDate: "",
+            current: true,
+            description: "Oversee digital marketing campaigns for technology clients with budgets exceeding $500,000. Implemented data-driven strategies resulting in 35% increase in lead generation.",
+          },
+          {
+            company: "Brand Solutions",
+            position: "Marketing Specialist",
+            startDate: "2016-06-01",
+            endDate: "2019-04-30",
+            current: false,
+            description: "Managed social media accounts and email marketing campaigns. Increased engagement by 42% through targeted content strategies.",
+          }
+        ],
+        education: [
+          {
+            institution: "Business University",
+            degree: "Bachelor of Business Administration",
+            field: "Marketing",
+            startDate: "2012-09-01",
+            endDate: "2016-05-30",
+            description: "Graduated magna cum laude. Active member of Marketing Association and Digital Media Club.",
+          }
+        ],
+        skills: ["Digital Marketing", "SEO/SEM", "Content Strategy", "Social Media Marketing", "Email Campaigns", "Analytics", "A/B Testing", "Brand Development", "Market Research", "CRM"],
+        certifications: [
+          {
+            name: "HubSpot Marketing Certification",
+            url: "https://academy.hubspot.com/certification"
+          },
+          {
+            name: "Google Analytics Certification",
+            url: "https://analytics.google.com/analytics/academy/"
+          }
+        ],
       }
     }
   ];
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("animate-fade-in");
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    const templateElements = templatesRef.current?.querySelectorAll(".template-item");
-    if (templateElements) {
-      templateElements.forEach((el, index) => {
-        (el as HTMLElement).style.animationDelay = `${0.1 * index}s`;
-        observer.observe(el);
-      });
-    }
-
-    const headerElement = templatesRef.current?.querySelector(".templates-header");
-    if (headerElement) {
-      observer.observe(headerElement);
-    }
-
-    return () => {
-      if (templateElements) {
-        templateElements.forEach((el) => observer.unobserve(el));
-      }
-      if (headerElement) {
-        observer.unobserve(headerElement);
-      }
-    };
-  }, []);
-
-  const handlePreview = (template) => {
-    setSelectedTemplate(template);
-    setViewMode("preview");
-    window.scrollTo(0, 0);
-  };
-
-  const handleEditTemplate = () => {
-    if (!isSignedIn) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to edit this resume",
-      });
-      navigate("/sign-up");
-      return;
-    }
-
-    if (selectedTemplate) {
-      setViewMode("edit");
-      window.scrollTo(0, 0);
-    }
+  const handleSelectTemplate = (templateId) => {
+    setSelectedTemplate(templateId);
   };
 
   const handleUseTemplate = () => {
@@ -390,172 +195,104 @@ export default function Templates() {
         title: "Sign in required",
         description: "Please sign in to use this template",
       });
-      navigate("/sign-up");
+      navigate("/sign-in");
       return;
     }
-    
-    if (selectedTemplate) {
-      sessionStorage.setItem("selectedTemplate", JSON.stringify(selectedTemplate.prefilledData));
+
+    const selectedTemplateData = templates.find(t => t.id === selectedTemplate);
+    if (selectedTemplateData) {
+      sessionStorage.setItem("selectedTemplate", JSON.stringify(selectedTemplateData.prefilledData));
       navigate("/builder");
     }
   };
 
-  const handleBackToTemplates = () => {
-    setViewMode("grid");
-    setSelectedTemplate(null);
-  };
-
   return (
-    <div ref={templatesRef} className="min-h-screen flex flex-col dark:bg-gradient-to-b dark:from-background dark:via-background/80 dark:to-background">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 pt-20">
-        {viewMode === "grid" && (
-          <section className="py-24">
-            <div className="container px-4 max-w-7xl">
-              <div className="text-center mb-16 templates-header opacity-0">
-                <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
-                  Professional Resume Templates
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                  Choose from our collection of ATS-friendly, professionally designed templates 
-                  that will help you land your dream job.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {templates.map((template, index) => (
-                  <div 
-                    key={index} 
-                    className="template-item opacity-0 group flex flex-col border bg-card rounded-xl overflow-hidden hover:shadow-md transition-all duration-300"
-                  >
-                    <div className="relative">
-                      <div className="aspect-[8.5/11] overflow-hidden bg-muted/30">
-                        <img 
-                          src={template.image} 
-                          alt={template.name} 
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        <div className="container px-4 py-12">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Resume Templates</h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Choose from professionally designed templates to kickstart your resume
+            </p>
+          </div>
+
+          <Tabs defaultValue="modern" value={selectedTemplate} onValueChange={handleSelectTemplate} className="w-full">
+            <TabsList className="grid grid-cols-3 mb-8 max-w-md mx-auto">
+              <TabsTrigger value="modern">Modern</TabsTrigger>
+              <TabsTrigger value="minimal">Minimal</TabsTrigger>
+              <TabsTrigger value="professional">Professional</TabsTrigger>
+            </TabsList>
+
+            {templates.map((template) => (
+              <TabsContent key={template.id} value={template.id}>
+                <div className="grid md:grid-cols-12 gap-8">
+                  <div className="md:col-span-8 lg:col-span-9">
+                    <div className="border rounded-lg overflow-hidden shadow-sm bg-white">
+                      <div className="p-1 max-h-[800px] overflow-y-auto">
+                        <DirectEditResume 
+                          template={templates.find(t => t.id === template.id)} 
+                          onSave={() => {}}
                         />
                       </div>
-                      
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="flex gap-3">
-                          <Button 
-                            size="sm" 
-                            className="bg-primary/90 hover:bg-primary"
-                            onClick={() => handlePreview(template)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" /> Preview
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      {template.popular && (
-                        <div className="absolute top-3 right-3 bg-primary text-white text-xs px-2 py-1 rounded-full flex items-center">
-                          <Star className="h-3 w-3 mr-1 fill-white" /> Popular
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold">{template.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-              
-              <div className="mt-16 text-center">
-                <p className="text-lg mb-6">Ready to create your professional resume?</p>
-                <Button 
-                  size="lg" 
-                  className="bg-primary hover:bg-primary/90"
-                  onClick={() => navigate(isSignedIn ? "/builder" : "/sign-up")}
-                >
-                  Get Started Now
-                </Button>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {viewMode === "preview" && selectedTemplate && (
-          <section className="py-12">
-            <div className="container px-4">
-              <div className="flex items-center justify-between mb-8">
-                <Button 
-                  variant="ghost" 
-                  onClick={handleBackToTemplates}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back to Templates
-                </Button>
-                <div className="flex gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleUseTemplate}
-                  >
-                    Use This Template
-                  </Button>
-                  <Button 
-                    onClick={handleEditTemplate}
-                  >
-                    <Edit className="h-4 w-4 mr-2" /> Edit Now
-                  </Button>
+                  
+                  <div className="md:col-span-4 lg:col-span-3">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{template.name}</CardTitle>
+                        <CardDescription>{template.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span className="text-sm">Professional header</span>
+                          </div>
+                          <div className="flex items-center">
+                            <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span className="text-sm">Clear content sections</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Briefcase className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span className="text-sm">Work experience focus</span>
+                          </div>
+                          <div className="flex items-center">
+                            <GraduationCap className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span className="text-sm">Education highlight</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex flex-col space-y-2">
+                        <Button 
+                          className="w-full" 
+                          onClick={handleUseTemplate}
+                        >
+                          Use This Template
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => {
+                            toast({
+                              title: "Coming soon",
+                              description: "This feature will be available soon",
+                            });
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Example
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex flex-col items-center">
-                <h2 className="text-2xl font-semibold mb-2">{selectedTemplate.name}</h2>
-                <p className="text-muted-foreground mb-8 max-w-2xl text-center">{selectedTemplate.description}</p>
-                
-                <div className="w-full max-w-[800px] mx-auto border rounded-lg shadow-lg overflow-hidden bg-white">
-                  <ResumePreview data={selectedTemplate.prefilledData} />
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {viewMode === "edit" && selectedTemplate && (
-          <section className="py-8">
-            <div className="container px-4">
-              <div className="flex items-center justify-between mb-8">
-                <Button 
-                  variant="ghost" 
-                  onClick={handleBackToTemplates}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back to Templates
-                </Button>
-                <Button 
-                  onClick={() => {
-                    sessionStorage.setItem("selectedTemplate", JSON.stringify(selectedTemplate.prefilledData));
-                    navigate("/builder");
-                  }}
-                >
-                  Continue in Full Editor
-                </Button>
-              </div>
-              
-              <div className="flex flex-col items-center">
-                <h2 className="text-2xl font-semibold mb-6">Edit Your Resume</h2>
-                
-                <div className="w-full max-w-[800px] mx-auto border rounded-lg shadow-lg overflow-hidden bg-white">
-                  <DirectEditResume 
-                    template={selectedTemplate} 
-                    onSave={(updatedData) => {
-                      const updatedTemplate = {
-                        ...selectedTemplate,
-                        prefilledData: updatedData
-                      };
-                      setSelectedTemplate(updatedTemplate);
-                    }} 
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
       </main>
       <Footer />
     </div>
