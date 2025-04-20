@@ -1,11 +1,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, Loader2, AlertCircle, FileType, FileText } from "lucide-react";
+import { Brain, Loader2, AlertCircle, FileType, FileText, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume } from "@/services/analyzerService";
 import { AnalysisResultData } from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card } from "@/components/ui/card";
 
 interface AIResumeAnalyzerProps {
   resumeData: any;
@@ -98,50 +99,71 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
   };
 
   return (
-    <div className="space-y-4">
-      <Button 
-        onClick={handleAnalyzeResume} 
-        disabled={isAnalyzing}
-        variant="secondary"
-        className="gap-2 w-full"
-      >
-        {isAnalyzing ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {processingStage || "Analyzing..."}
-          </>
-        ) : (
-          <>
-            <Brain className="h-4 w-4" />
-            Analyze Resume with AI
-          </>
-        )}
-      </Button>
+    <div className="space-y-6">
+      <div className="flex gap-6">
+        {/* Score Display */}
+        <Card className="w-48 h-48 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-100 to-white dark:from-indigo-950 dark:to-gray-900">
+          <div className="text-5xl font-bold text-indigo-600 dark:text-indigo-400">
+            {results?.overallScore || "53"}
+          </div>
+          <div className="text-sm text-muted-foreground mt-2">OVERALL SCORE</div>
+          <Star className="h-5 w-5 text-amber-500 mt-2" />
+        </Card>
+
+        <div className="flex-1 space-y-4">
+          <h2 className="text-2xl font-semibold">
+            Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"},
+            {resumeData?.personalInfo?.name?.split(" ")[0] || "there"}.
+          </h2>
+          <p className="text-muted-foreground">
+            Welcome to your resume review. Let's analyze your resume to help you improve it.
+          </p>
+
+          <Button 
+            onClick={handleAnalyzeResume} 
+            disabled={isAnalyzing}
+            variant="default"
+            className="gap-2 w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+          >
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {processingStage || "Analyzing..."}
+              </>
+            ) : (
+              <>
+                <Brain className="h-4 w-4" />
+                Analyze Resume with AI
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
       
       {error && (
-        <Alert variant="destructive" className="mt-2">
-          <AlertCircle className="h-4 w-4 mr-2" />
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
           <AlertTitle>Analysis Failed</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
       
       {isAnalyzing && (
-        <div className="p-3 border rounded-md bg-muted/40 space-y-2 mt-2">
+        <Card className="p-4 bg-muted/40">
           <div className="flex items-center text-sm text-muted-foreground gap-2">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
             <span>{processingStage}</span>
           </div>
           {extractedTextLength !== null && (
-            <div className="flex items-center text-xs text-muted-foreground gap-2">
+            <div className="flex items-center text-xs text-muted-foreground gap-2 mt-2">
               <FileText className="h-3 w-3" />
               <span>{extractedTextLength} characters processed</span>
             </div>
           )}
-        </div>
+        </Card>
       )}
       
-      <Alert variant="default" className="bg-muted/40 border-muted">
+      <Alert variant="default" className="bg-muted/40">
         <FileType className="h-4 w-4" />
         <AlertDescription className="text-xs text-muted-foreground">
           For LaTeX-generated PDFs, we've enhanced text extraction to better handle special formatting. 

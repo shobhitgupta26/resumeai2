@@ -1,4 +1,3 @@
-
 import {
   AlertCircle,
   Award,
@@ -39,7 +38,7 @@ export default function AnalysisResult({ results }: AnalysisResultProps) {
   
   if (!results) {
     return (
-      <div className="flex items-center justify-center h-96 border rounded-lg bg-card shadow-sm dark:bg-gray-800/80 dark:border-gray-700">
+      <div className="flex items-center justify-center h-96 border rounded-lg bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950 dark:to-gray-900 shadow-sm">
         <div className="text-center space-y-3">
           <BarChart4 className="h-12 w-12 mx-auto text-muted-foreground/50" />
           <p className="text-lg text-muted-foreground">Upload your resume to see analysis</p>
@@ -76,16 +75,16 @@ export default function AnalysisResult({ results }: AnalysisResultProps) {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto dark:bg-gray-800">
-          <TabsTrigger value="overview" className="flex items-center gap-2 dark:data-[state=active]:bg-gray-700">
+        <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto bg-indigo-50 dark:bg-indigo-950">
+          <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
             <LayoutDashboard className="h-4 w-4" />
             <span>Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="insights" className="flex items-center gap-2 dark:data-[state=active]:bg-gray-700">
+          <TabsTrigger value="insights" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
             <Lightbulb className="h-4 w-4" />
             <span>Insights</span>
           </TabsTrigger>
-          <TabsTrigger value="ats" className="flex items-center gap-2 dark:data-[state=active]:bg-gray-700">
+          <TabsTrigger value="ats" className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
             <TrendingUp className="h-4 w-4" />
             <span>ATS Score</span>
           </TabsTrigger>
