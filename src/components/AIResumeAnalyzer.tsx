@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, Loader2, AlertCircle } from "lucide-react";
+import { Brain, Loader2, AlertCircle, FileType, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume } from "@/services/analyzerService";
 import { AnalysisResultData } from "@/services/analyzerService";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface AIResumeAnalyzerProps {
   resumeData: any;
@@ -121,16 +121,33 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
       {error && (
         <Alert variant="destructive" className="mt-2">
           <AlertCircle className="h-4 w-4 mr-2" />
+          <AlertTitle>Analysis Failed</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
       
       {isAnalyzing && (
-        <div className="text-xs text-muted-foreground animate-pulse mt-2 text-center">
-          {processingStage}
-          {extractedTextLength !== null && ` (${extractedTextLength} characters processed)`}
+        <div className="p-3 border rounded-md bg-muted/40 space-y-2 mt-2">
+          <div className="flex items-center text-sm text-muted-foreground gap-2">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <span>{processingStage}</span>
+          </div>
+          {extractedTextLength !== null && (
+            <div className="flex items-center text-xs text-muted-foreground gap-2">
+              <FileText className="h-3 w-3" />
+              <span>{extractedTextLength} characters processed</span>
+            </div>
+          )}
         </div>
       )}
+      
+      <Alert variant="default" className="bg-muted/40 border-muted">
+        <FileType className="h-4 w-4" />
+        <AlertDescription className="text-xs text-muted-foreground">
+          For LaTeX-generated PDFs, we've enhanced text extraction to better handle special formatting. 
+          If you encounter analysis issues, try uploading a plain text (.txt) version of your resume.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }
