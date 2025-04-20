@@ -28,8 +28,12 @@ export default function Analyzer() {
   const [currentSavedAnalysisId, setCurrentSavedAnalysisId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const analyses = getSavedAnalyses();
-    setSavedAnalyses(analyses);
+    try {
+      const analyses = getSavedAnalyses();
+      setSavedAnalyses(analyses);
+    } catch (error) {
+      console.error("Error loading saved analyses:", error);
+    }
   }, []);
 
   const handleAnalyze = async () => {
@@ -53,6 +57,10 @@ export default function Analyzer() {
 
       setProcessingStage("Analyzing with AI");
       const analysisResults = await analyzeResume(fileContent);
+      
+      if (!analysisResults) {
+        throw new Error("Failed to get analysis results from AI");
+      }
       
       const savedAnalysis = saveAnalysisToStorage(analysisResults, file.name);
       
