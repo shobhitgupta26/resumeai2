@@ -206,12 +206,13 @@ const extractReadableText = (content: string): string => {
 const extractTextFromPDF = (pdfContent: string): string => {
   let extractedText = '';
   
-  // Improved PDF text extraction logic
+  // Enhanced PDF text extraction logic for better LaTeX support
   try {
     // Look for text object markers in PDF
     const textMarkers = ['/Text', '/TJ', '/Tj', '/T*', '/BT', '/ET'];
     const lines = pdfContent.split('\n');
     
+    // First pass: Extract text from standard PDF structures
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       
@@ -254,7 +255,7 @@ const extractTextFromPDF = (pdfContent: string): string => {
         if (tjMatch && tjMatch[1]) {
           const parts = tjMatch[1].split(/\s*(?:\(|\))\s*/);
           parts.forEach(part => {
-            if (part && !/^[-\d.]+$/.test(part)) {
+            if (part && !/^[-\d.]+$/.test(part) && part.length > 0) {
               extractedText += part.replace(/[\\\(\)]/g, '') + ' ';
             }
           });
@@ -269,7 +270,7 @@ const extractTextFromPDF = (pdfContent: string): string => {
         }
       }
       
-      // Look for hex-encoded strings
+      // Look for hex-encoded strings (common in LaTeX-generated PDFs)
       else if (line.includes('<') && line.includes('>')) {
         const hexMatches = line.match(/<([0-9A-Fa-f]+)>/g);
         if (hexMatches) {
@@ -279,7 +280,13 @@ const extractTextFromPDF = (pdfContent: string): string => {
             try {
               let hexText = '';
               for (let i = 0; i < hex.length; i += 2) {
-                hexText += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                if (i + 1 < hex.length) {
+                  const hexCode = hex.substr(i, 2);
+                  const charCode = parseInt(hexCode, 16);
+                  if (charCode >= 32 && charCode <= 126) { // Only printable ASCII
+                    hexText += String.fromCharCode(charCode);
+                  }
+                }
               }
               if (hexText.length > 1 && /[a-zA-Z0-9]/.test(hexText)) {
                 extractedText += hexText + ' ';
@@ -292,31 +299,133 @@ const extractTextFromPDF = (pdfContent: string): string => {
       }
     }
     
-    // Secondary pass to find more text if we didn't get enough
-    if (extractedText.length < 100) {
-      console.log("First pass extraction yielded limited text, trying secondary method");
+    // Secondary pass for LaTeX-specific content
+    if (extractedText.length < 500) {
+      console.log("First pass extraction yielded limited text, trying LaTeX-specialized methods");
       
-      // Look for content between BT (Begin Text) and ET (End Text) markers
+      // Look for content between BT (Begin Text) and ET (End Text) markers - common in LaTeX PDFs
       const btEtRegex = /BT([\s\S]*?)ET/g;
       let btEtMatch;
+      let btEtExtracted = '';
+      
       while ((btEtMatch = btEtRegex.exec(pdfContent)) !== null) {
         const textBlock = btEtMatch[1];
-        const textParts = textBlock.match(/\((.*?)\)Tj|\[(.*?)\]TJ/g) || [];
+        
+        // Look for LaTeX-style text structures
+        const textParts = textBlock.match(/\((.*?)\)Tj|\[(.*?)\]TJ|<([0-9A-Fa-f]+)>/g) || [];
         
         textParts.forEach(part => {
           if (part.endsWith('Tj')) {
-            const text = part.substring(1, part.length - 3).replace(/\\(\d{3})/g, (m, code) => 
-              String.fromCharCode(parseInt(code, 8))
-            );
-            extractedText += text + ' ';
-          } else if (part.endsWith('TJ')) {
+            const text = part.substring(1, part.length - 3)
+              .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
+              .replace(/\\n/g, '\n')
+              .replace(/\\\\/g, '\\')
+              .replace(/\\\(/g, '(')
+              .replace(/\\\)/g, ')');
+            
+            btEtExtracted += text + ' ';
+          } 
+          else if (part.endsWith('TJ')) {
             const arrayContent = part.substring(1, part.length - 3);
             const stringParts = arrayContent.match(/\((.*?)\)/g) || [];
             stringParts.forEach(str => {
-              extractedText += str.substring(1, str.length - 1) + ' ';
+              const text = str.substring(1, str.length - 1)
+                .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)));
+              btEtExtracted += text + ' ';
+            });
+            
+            // Handle numbers mixed with text in TJ arrays (common in LaTeX PDFs)
+            const mixedParts = arrayContent.match(/\(([^)]*)\)|([+-]?\d+(\.\d+)?)/g) || [];
+            mixedParts.forEach(mixedPart => {
+              if (!mixedPart.startsWith('(') && !isNaN(parseFloat(mixedPart))) {
+                // This is a spacing number, ignore
+              } else if (mixedPart.startsWith('(')) {
+                const text = mixedPart.substring(1, mixedPart.length - 1)
+                  .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)));
+                btEtExtracted += text;
+              }
             });
           }
+          else if (part.startsWith('<') && part.endsWith('>')) {
+            // Handle hex encoding (very common in LaTeX PDFs)
+            const hex = part.substring(1, part.length - 1);
+            try {
+              let hexText = '';
+              for (let i = 0; i < hex.length; i += 2) {
+                if (i + 1 < hex.length) {
+                  const charCode = parseInt(hex.substr(i, 2), 16);
+                  if (charCode >= 32 && charCode <= 126) {
+                    hexText += String.fromCharCode(charCode);
+                  } else if (charCode === 32 || charCode === 10 || charCode === 13) {
+                    hexText += ' '; // Convert common whitespace characters to space
+                  }
+                }
+              }
+              btEtExtracted += hexText + ' ';
+            } catch (e) {
+              // Skip invalid hex
+            }
+          }
         });
+      }
+      
+      if (btEtExtracted.length > extractedText.length * 0.5) {
+        console.log("BT/ET extraction yielded better results, using that");
+        extractedText = btEtExtracted;
+      }
+      
+      // If still not enough text, try one more approach for LaTeX PDFs
+      if (extractedText.length < 200) {
+        console.log("Still insufficient text, attempting final extraction method");
+        
+        // Look for content tables and structure elements common in LaTeX
+        const contentMatches = pdfContent.match(/\/Contents\s*\[\s*(.*?)\s*\]/gs) || [];
+        let contentExtracted = '';
+        
+        contentMatches.forEach(contentMatch => {
+          const objectRefs = contentMatch.match(/\d+\s+\d+\s+R/g) || [];
+          objectRefs.forEach(ref => {
+            const objId = ref.split(' ')[0];
+            const objRegex = new RegExp(`${objId}\\s+0\\s+obj[\\s\\S]*?endobj`, 'g');
+            const objMatches = pdfContent.match(objRegex) || [];
+            
+            objMatches.forEach(objMatch => {
+              // Extract text content from stream
+              const streamMatch = objMatch.match(/stream([\s\S]*?)endstream/);
+              if (streamMatch && streamMatch[1]) {
+                const streamContent = streamMatch[1].trim();
+                
+                // Process text in the stream
+                const textParts = streamContent.match(/\(([^)]+)\)Tj|\[([^\]]+)\]TJ|<([0-9A-Fa-f]+)>/g) || [];
+                textParts.forEach(textPart => {
+                  if (textPart.includes('(') && textPart.includes(')')) {
+                    const text = textPart.match(/\((.*?)\)/)[1]
+                      .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)));
+                    contentExtracted += text + ' ';
+                  }
+                  else if (textPart.startsWith('<') && textPart.endsWith('>')) {
+                    const hex = textPart.substring(1, textPart.length - 1);
+                    let hexText = '';
+                    for (let i = 0; i < hex.length; i += 2) {
+                      if (i + 1 < hex.length) {
+                        const charCode = parseInt(hex.substr(i, 2), 16);
+                        if (charCode >= 32 && charCode <= 126) {
+                          hexText += String.fromCharCode(charCode);
+                        }
+                      }
+                    }
+                    contentExtracted += hexText + ' ';
+                  }
+                });
+              }
+            });
+          });
+        });
+        
+        if (contentExtracted.length > extractedText.length) {
+          console.log("Content extraction yielded better results, using that");
+          extractedText = contentExtracted;
+        }
       }
     }
   } catch (error) {
