@@ -18,6 +18,7 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
   const [processingStage, setProcessingStage] = useState<string | null>(null);
   const [extractedTextLength, setExtractedTextLength] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResultData | null>(null);
   const { toast } = useToast();
 
   const handleAnalyzeResume = async () => {
@@ -33,10 +34,13 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
       
       // Send to AI for analysis
       setProcessingStage("Running AI analysis");
-      const analysisResults = await analyzeResume(resumeText);
+      const results = await analyzeResume(resumeText);
+      
+      // Store results in local state
+      setAnalysisResults(results);
       
       // Pass results back to parent
-      onAnalysisComplete(analysisResults);
+      onAnalysisComplete(results);
       
       toast({
         title: "Resume analyzed",
@@ -104,7 +108,7 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
         {/* Score Display */}
         <Card className="w-48 h-48 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-100 to-white dark:from-indigo-950 dark:to-gray-900">
           <div className="text-5xl font-bold text-indigo-600 dark:text-indigo-400">
-            {results?.overallScore || "53"}
+            {analysisResults?.overallScore || "53"}
           </div>
           <div className="text-sm text-muted-foreground mt-2">OVERALL SCORE</div>
           <Star className="h-5 w-5 text-amber-500 mt-2" />
