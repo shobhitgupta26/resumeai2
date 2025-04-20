@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { FileUp, Upload, Loader2 } from "lucide-react";
+import { FileUp, Upload, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -25,10 +25,15 @@ export default function FileUpload({
   processingStage 
 }: FileUploadProps) {
   const { toast } = useToast();
+  const [isPdf, setIsPdf] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      onFileSelect(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      setIsPdf(selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf'));
+      onFileSelect(selectedFile);
+    } else {
+      setIsPdf(false);
     }
   };
 
@@ -87,6 +92,16 @@ export default function FileUpload({
           )}
         </Button>
       </div>
+      
+      {isPdf && !loading && !error && (
+        <Alert variant="default" className="mt-4 bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50">
+          <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertTitle className="text-amber-800 dark:text-amber-400">PDF Selected</AlertTitle>
+          <AlertDescription className="text-amber-700 dark:text-amber-300 text-sm">
+            Some PDF files can be difficult to extract text from. If analysis fails, please try uploading a plain text (.txt) version of your resume instead.
+          </AlertDescription>
+        </Alert>
+      )}
       
       {error && (
         <Alert variant="destructive" className="mt-4">
