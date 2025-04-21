@@ -53,7 +53,7 @@ export default function FileUpload({
         </div>
         <h2 className="text-2xl font-medium mb-2">Upload Your Resume</h2>
         <p className="text-muted-foreground">
-          Upload your resume in TXT, DOC, DOCX, or PDF format
+          Upload your resume in any common format (PDF, DOC, DOCX, TXT)
         </p>
       </div>
 

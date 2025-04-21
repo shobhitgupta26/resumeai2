@@ -52,7 +52,7 @@ export default function Analyzer() {
       const fileContent = await extractTextFromFile(file);
       
       if (!fileContent || fileContent.trim().length < 50) {
-        throw new Error("Could not extract sufficient text from the file. Please try another file format (TXT recommended) or check file content.");
+        throw new Error("Could not extract sufficient text from the file. Please try another file format.");
       }
 
       setProcessingStage("Analyzing with AI");
