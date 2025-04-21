@@ -60,7 +60,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
     console.log("Cleaned content length:", cleanContent.length);
     
     if (cleanContent.length < 50) {
-      throw new Error("Could not extract sufficient text from the resume. Please try a different file format like .txt for best results.");
+      throw new Error("Could not extract sufficient text from the resume. Please try a different file format.");
     }
     
     const prompt = `
@@ -197,279 +197,121 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
 const extractReadableText = (content: string): string => {
   if (content.startsWith('%PDF') || content.includes('%%EOF') || /^\s*%PDF/.test(content)) {
     console.log("Detected PDF content, applying advanced extraction");
-    return extractTextFromPDFAdvanced(content);
+    return extractTextFromPDF(content);
   }
   
   return cleanTextContent(content);
 };
 
-const extractTextFromPDFAdvanced = (pdfContent: string): string => {
+// Simplified and improved PDF text extraction function
+const extractTextFromPDF = (pdfContent: string): string => {
   let extractedText = '';
   
   try {
-    console.log("Starting enhanced PDF extraction with multiple methods");
+    // Find all text content from various PDF structures
+    const allTextMatches = [];
     
-    // Method 1: Extract text using regex for text objects in content streams
-    const extractMethodOne = () => {
-      console.log("Applying extraction method 1: Text objects from streams");
-      let result = '';
-      
-      // Find all content streams
-      const streamMatches = pdfContent.match(/stream[\r\n]([\s\S]*?)[\r\n]endstream/g) || [];
-      
-      for (const streamMatch of streamMatches) {
-        const streamContent = streamMatch.replace(/^stream[\r\n]|[\r\n]endstream$/g, '');
-        
-        // Extract text objects
-        const textObjects = streamContent.match(/BT[\s\S]*?ET/g) || [];
-        
-        for (const textObject of textObjects) {
-          // Extract text strings
-          const textMatches = textObject.match(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)\s*Tj|\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>)*)\]\s*TJ/g) || [];
-          
-          for (const textMatch of textMatches) {
-            if (textMatch.endsWith('Tj')) {
-              const matches = textMatch.match(/\((.*?)\)/);
-              if (matches && matches[1]) {
-                const text = matches[1]
-                  .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
-                  .replace(/\\\(/g, '(')
-                  .replace(/\\\)/g, ')')
-                  .replace(/\\\\/g, '\\');
-                
-                if (text.length > 1 && /[a-zA-Z0-9]/.test(text)) {
-                  result += text + ' ';
-                }
-              }
-            } else if (textMatch.endsWith('TJ')) {
-              const arrayContent = textMatch.slice(1, -3);
-              const stringMatches = arrayContent.match(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)/g) || [];
-              
-              for (const strMatch of stringMatches) {
-                const text = strMatch.slice(1, -1)
-                  .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
-                  .replace(/\\\(/g, '(')
-                  .replace(/\\\)/g, ')')
-                  .replace(/\\\\/g, '\\');
-                
-                if (text.length > 1 && /[a-zA-Z0-9]/.test(text)) {
-                  result += text + ' ';
-                }
-              }
-            }
-          }
-        }
+    // Method 1: Find text within parentheses after "Tj" operators (most common text encoding)
+    const tjMatches = pdfContent.matchAll(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)\s*Tj/g);
+    for (const match of tjMatches) {
+      if (match[1] && match[1].length > 1) {
+        allTextMatches.push(match[1]);
       }
-      
-      return result;
-    };
-    
-    // Method 2: Extract text from hex-encoded strings (common in modern PDFs)
-    const extractMethodTwo = () => {
-      console.log("Applying extraction method 2: Hex-encoded strings");
-      let result = '';
-      
-      const hexMatches = pdfContent.match(/<([0-9A-Fa-f]+)>\s*Tj/g) || [];
-      
-      for (const hexMatch of hexMatches) {
-        const hex = hexMatch.match(/<([0-9A-Fa-f]+)>/)?.[1] || '';
-        let text = '';
-        
-        for (let i = 0; i < hex.length; i += 2) {
-          if (i + 1 < hex.length) {
-            const charCode = parseInt(hex.substr(i, 2), 16);
-            if (charCode >= 32 && charCode <= 126) {
-              text += String.fromCharCode(charCode);
-            } else if (charCode === 32 || charCode === 10 || charCode === 13) {
-              text += ' ';
-            }
-          }
-        }
-        
-        if (text.length > 1 && /[a-zA-Z0-9]/.test(text)) {
-          result += text + ' ';
-        }
-      }
-      
-      return result;
-    };
-    
-    // Method 3: Extract text from ToUnicode CMaps
-    const extractMethodThree = () => {
-      console.log("Applying extraction method 3: ToUnicode CMaps");
-      let result = '';
-      
-      // Find ToUnicode CMaps
-      const cmapMatches = pdfContent.match(/\/ToUnicode[\s\S]*?stream[\r\n]([\s\S]*?)[\r\n]endstream/g) || [];
-      const charMap = new Map<string, string>();
-      
-      for (const cmapMatch of cmapMatches) {
-        const cmapContent = cmapMatch.replace(/^.*?stream[\r\n]|[\r\n]endstream.*$/gs, '');
-        const mappings = cmapContent.match(/beginbfchar[\s\S]*?endbfchar/g) || [];
-        
-        for (const mapping of mappings) {
-          const charMappings = mapping.replace(/beginbfchar|endbfchar/g, '').trim().split(/\s+/);
-          
-          for (let i = 0; i < charMappings.length; i += 2) {
-            if (i + 1 < charMappings.length) {
-              const pdfChar = charMappings[i].replace(/[<>]/g, '');
-              const unicodeChar = charMappings[i+1].replace(/[<>]/g, '');
-              
-              if (pdfChar && unicodeChar) {
-                try {
-                  // Convert Unicode hex to actual character
-                  const codePoint = parseInt(unicodeChar, 16);
-                  if (codePoint) {
-                    charMap.set(pdfChar, String.fromCodePoint(codePoint));
-                  }
-                } catch (e) {
-                  // Ignore invalid conversions
-                }
-              }
-            }
-          }
-        }
-      }
-      
-      // Use the mapping to extract text
-      const textBlocks = pdfContent.match(/\/(T[0-9]+)\s+(\d+)\s+Tf[\s\S]*?BT[\s\S]*?ET/g) || [];
-      
-      for (const block of textBlocks) {
-        const charCodes = block.match(/<([0-9A-Fa-f]+)>\s*Tj/g) || [];
-        
-        for (const code of charCodes) {
-          const charCode = code.match(/<([0-9A-Fa-f]+)>/)?.[1] || '';
-          
-          if (charMap.has(charCode)) {
-            result += charMap.get(charCode);
-          } else {
-            // Try direct interpretation
-            let text = '';
-            for (let i = 0; i < charCode.length; i += 2) {
-              if (i + 1 < charCode.length) {
-                const code = parseInt(charCode.substr(i, 2), 16);
-                if (code >= 32 && code <= 126) {
-                  text += String.fromCharCode(code);
-                }
-              }
-            }
-            if (text.length > 0) {
-              result += text;
-            }
-          }
-        }
-        result += ' ';
-      }
-      
-      return result;
-    };
-    
-    // Method 4: Extract text from all parenthesized strings (may catch more text)
-    const extractMethodFour = () => {
-      console.log("Applying extraction method 4: All parenthesized strings");
-      let result = '';
-      
-      // Find all text in parentheses that might be readable
-      const parenthesisMatches = pdfContent.match(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)/g) || [];
-      
-      for (const match of parenthesisMatches) {
-        const text = match.slice(1, -1)
-          .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
-          .replace(/\\\(/g, '(')
-          .replace(/\\\)/g, ')')
-          .replace(/\\\\/g, '\\');
-        
-        // Only add if it looks like actual text (contains letters/numbers and is longer than 1 char)
-        if (text.length > 1 && /[a-zA-Z0-9]/.test(text)) {
-          result += text + ' ';
-        }
-      }
-      
-      return result;
-    };
-    
-    // Method 5: Using PDF.js-like approach for text extraction
-    const extractMethodFive = () => {
-      console.log("Applying extraction method 5: PDF.js-like approach");
-      let result = '';
-      
-      // Find all text showing operators: TJ, Tj, ', "
-      const operators = [
-        ...pdfContent.matchAll(/\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>)*)\]\s*TJ/g),
-        ...pdfContent.matchAll(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)\s*Tj/g),
-        ...pdfContent.matchAll(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)\s*'/g),
-        ...pdfContent.matchAll(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)\s*"/g)
-      ];
-      
-      for (const match of operators) {
-        const content = match[1];
-        
-        if (match[0].includes('TJ')) {
-          // TJ operator can contain multiple strings and positioning numbers
-          const stringMatches = content.match(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)/g) || [];
-          
-          for (const str of stringMatches) {
-            const text = str.slice(1, -1)
-              .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
-              .replace(/\\\(/g, '(')
-              .replace(/\\\)/g, ')')
-              .replace(/\\\\/g, '\\');
-            
-            if (text.length > 0) {
-              result += text + ' ';
-            }
-          }
-        } else {
-          // Tj, ', " operators - direct strings
-          const text = content
-            .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
-            .replace(/\\\(/g, '(')
-            .replace(/\\\)/g, ')')
-            .replace(/\\\\/g, '\\');
-          
-          if (text.length > 0) {
-            result += text + ' ';
-          }
-        }
-      }
-      
-      return result;
-    };
-    
-    // Apply all extraction methods and select the best result
-    const results = [
-      extractMethodOne(),
-      extractMethodTwo(),
-      extractMethodThree(),
-      extractMethodFour(),
-      extractMethodFive()
-    ];
-    
-    console.log("Extraction results lengths:", results.map(r => r.length));
-    
-    // Select the longest result that has actual content
-    const validResults = results.filter(r => r.length > 100 && /[a-zA-Z0-9]{10,}/.test(r));
-    
-    if (validResults.length > 0) {
-      // Sort by length and take the longest
-      extractedText = validResults.sort((a, b) => b.length - a.length)[0];
-    } else {
-      // If no good result, concatenate all results
-      extractedText = results.join(' ');
     }
     
-    console.log("Final extracted text length:", extractedText.length);
+    // Method 2: Find text within arrays with "TJ" operators (spacing-aware text)
+    const tjArrayMatches = pdfContent.matchAll(/\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>)*)\]\s*TJ/g);
+    for (const match of tjArrayMatches) {
+      if (match[1]) {
+        // Extract string parts from the TJ array
+        const stringMatches = match[1].match(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)/g) || [];
+        for (const strMatch of stringMatches) {
+          if (strMatch && strMatch.length > 2) { // Longer than just ()
+            allTextMatches.push(strMatch.slice(1, -1));
+          }
+        }
+      }
+    }
     
-    // Post-process the text
+    // Method 3: Find text within hex notation (usually used for non-ASCII text)
+    const hexMatches = pdfContent.matchAll(/<([0-9A-Fa-f]+)>\s*Tj/g);
+    for (const match of hexMatches) {
+      if (match[1] && match[1].length > 0) {
+        let text = '';
+        for (let i = 0; i < match[1].length; i += 2) {
+          if (i + 1 < match[1].length) {
+            const charCode = parseInt(match[1].slice(i, i + 2), 16);
+            if (charCode >= 32 && charCode <= 126) { // Printable ASCII
+              text += String.fromCharCode(charCode);
+            }
+          }
+        }
+        if (text.length > 0) {
+          allTextMatches.push(text);
+        }
+      }
+    }
+    
+    // Method 4: More general search for text within parentheses
+    const generalMatches = pdfContent.matchAll(/\(([^\\\(\)]{2,})\)/g);
+    for (const match of generalMatches) {
+      if (match[1] && match[1].length > 1 && /[a-zA-Z0-9]/.test(match[1])) {
+        allTextMatches.push(match[1]);
+      }
+    }
+    
+    // Handle escaping and build the final text
+    for (let textChunk of allTextMatches) {
+      textChunk = textChunk
+        .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
+        .replace(/\\\(/g, '(')
+        .replace(/\\\)/g, ')')
+        .replace(/\\\\/g, '\\');
+      
+      if (/[a-zA-Z0-9]/.test(textChunk)) {
+        extractedText += textChunk + ' ';
+      }
+    }
+    
+    // Clean up and format
     extractedText = extractedText
-      .replace(/(\w)-\s+(\w)/g, '$1$2') // Fix hyphenated words
       .replace(/\s+/g, ' ')
-      .replace(/[^\x20-\x7E\s]/g, '') // Remove non-printable ASCII chars
+      .replace(/([a-z])-\s+([a-z])/gi, '$1$2')  // Fix hyphenated words
       .trim();
     
+    // Additional cleaning for PDF artifacts
+    extractedText = extractedText
+      .replace(/\s*\b[A-Z][0-9]+\b\s*/g, ' ') // Remove font codes
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    console.log("Extracted text length:", extractedText.length);
+    
+    if (extractedText.length < 50) {
+      console.warn("PDF extraction produced little text, trying fallback method");
+      
+      // Fallback method: try to find any meaningful text
+      const contentMatches = pdfContent.match(/stream[\r\n]([\s\S]*?)[\r\n]endstream/g) || [];
+      let fallbackText = '';
+      
+      for (const streamMatch of contentMatches) {
+        const streamContent = streamMatch.replace(/^stream[\r\n]|[\r\n]endstream$/g, '');
+        const textFragments = streamContent.match(/[a-zA-Z0-9][a-zA-Z0-9 .\-,:;?!\n]{5,}/g) || [];
+        
+        for (const fragment of textFragments) {
+          if (fragment.length > 10 && /[a-zA-Z]{3,}/.test(fragment)) {
+            fallbackText += fragment + ' ';
+          }
+        }
+      }
+      
+      if (fallbackText.length > extractedText.length) {
+        extractedText = fallbackText;
+      }
+    }
   } catch (error) {
     console.error("Error in PDF text extraction:", error);
-    extractedText = "ERROR: Could not extract text from PDF. Please try a different file format.";
+    extractedText = "Failed to extract text from PDF. Please try a different file format.";
   }
   
   return cleanTextContent(extractedText);

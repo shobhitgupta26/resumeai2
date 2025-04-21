@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { FileUp, Upload, Loader2, Info } from "lucide-react";
+import { FileUp, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -25,15 +25,11 @@ export default function FileUpload({
   processingStage 
 }: FileUploadProps) {
   const { toast } = useToast();
-  const [isPdf, setIsPdf] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      setIsPdf(selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf'));
       onFileSelect(selectedFile);
-    } else {
-      setIsPdf(false);
     }
   };
 
@@ -57,10 +53,7 @@ export default function FileUpload({
         </div>
         <h2 className="text-2xl font-medium mb-2">Upload Your Resume</h2>
         <p className="text-muted-foreground">
-          Supported file types: TXT (recommended), DOC, DOCX, PDF (Max 5MB)
-        </p>
-        <p className="text-xs text-muted-foreground mt-2 font-medium">
-          For best results, use plain text (.txt) format
+          Supported file types: TXT, DOC, DOCX, PDF (Max 5MB)
         </p>
       </div>
 
@@ -92,16 +85,6 @@ export default function FileUpload({
           )}
         </Button>
       </div>
-      
-      {isPdf && !loading && !error && (
-        <Alert variant="default" className="mt-4 bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50">
-          <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <AlertTitle className="text-amber-800 dark:text-amber-400">PDF Selected</AlertTitle>
-          <AlertDescription className="text-amber-700 dark:text-amber-300 text-sm">
-            Some PDF files can be difficult to extract text from. If analysis fails, please try uploading a plain text (.txt) version of your resume instead.
-          </AlertDescription>
-        </Alert>
-      )}
       
       {error && (
         <Alert variant="destructive" className="mt-4">

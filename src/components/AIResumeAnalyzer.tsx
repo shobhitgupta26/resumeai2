@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, Loader2, AlertCircle, FileType, FileText, Star, Info } from "lucide-react";
+import { Brain, Loader2, AlertCircle, FileText, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume } from "@/services/analyzerService";
 import { AnalysisResultData } from "@/services/analyzerService";
@@ -166,19 +166,6 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
           )}
         </Card>
       )}
-      
-      <Alert variant="default" className="bg-muted/40">
-        <Info className="h-4 w-4" />
-        <AlertTitle>PDF Analysis Tips</AlertTitle>
-        <AlertDescription className="text-xs text-muted-foreground">
-          If you encounter issues with PDF analysis showing gibberish or corrupted text, try these options:
-          <ul className="mt-2 space-y-1 list-disc list-inside">
-            <li>Upload a plain text (.txt) version of your resume</li>
-            <li>Try a different PDF (some PDF creators use encoding that's hard to extract)</li>
-            <li>Copy and paste your resume text into a plain text file and upload that</li>
-          </ul>
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }
