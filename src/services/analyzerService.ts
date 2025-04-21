@@ -1,3 +1,4 @@
+
 interface ResumeAnalysisRequest {
   text: string;
 }
@@ -195,39 +196,37 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
   }
 };
 
+// Enhanced function for extracting text from various file formats
 const extractReadableText = (content: string): string => {
   if (!content || content.length < 10) {
     return content;
   }
   
   try {
-    // Check if it's likely a PDF
-    const isPDF = content.startsWith('%PDF') || 
+    // Check for PDF binary content
+    const isPDF = content.includes('%PDF') || 
                  content.includes('%%EOF') || 
-                 /^\s*%PDF/.test(content) ||
                  content.includes('/Type /Page') ||
                  content.includes('/Contents');
     
-    // Check if it's likely a DOCX (Office Open XML)
+    // Check for Office XML format
     const isDocx = content.includes('PK') && 
                   (content.includes('word/') || 
-                   content.includes('[Content_Types].xml') ||
-                   content.includes('docProps/'));
+                  content.includes('[Content_Types].xml'));
                    
-    // Check if it's likely a DOC (older Microsoft Word)
+    // Check for older Office binary format
     const isDoc = content.includes('\xD0\xCF\x11\xE0') || 
-                 content.includes('Microsoft Word') ||
-                 content.includes('MSWordDoc');
+                 content.includes('Microsoft Word');
+    
+    console.log("File format detection: PDF=", isPDF, "DOCX=", isDocx, "DOC=", isDoc);
     
     if (isPDF) {
-      console.log("Detected PDF content, applying universal PDF extraction");
-      return universalPDFTextExtraction(content);
+      return enhancedPDFTextExtraction(content);
     } else if (isDocx || isDoc) {
-      console.log("Detected Word document, applying office document extraction");
       return extractOfficeDocumentText(content);
     }
     
-    // Fallback to standard text cleaning
+    // For plain text files
     return cleanTextContent(content);
   } catch (error) {
     console.error("Error in text extraction:", error);
@@ -235,126 +234,121 @@ const extractReadableText = (content: string): string => {
   }
 };
 
-const universalPDFTextExtraction = (pdfContent: string): string => {
+// New improved PDF text extraction function
+const enhancedPDFTextExtraction = (pdfContent: string): string => {
+  console.log("Enhanced PDF extraction started");
   let extractedText = '';
   
   try {
-    // Multi-strategy PDF text extraction approach
+    // STRATEGY 1: Find text between BT (Begin Text) and ET (End Text) operators
+    const textBlocks = pdfContent.match(/BT[\s\S]*?ET/g) || [];
     
-    // Strategy 1: Content stream text extraction
-    const streams = pdfContent.match(/stream\s+([\s\S]*?)\s+endstream/g) || [];
-    for (const stream of streams) {
-      const streamContent = stream.replace(/^stream\s+/, '').replace(/\s+endstream$/, '');
+    for (const block of textBlocks) {
+      // Extract text strings using common PDF text operators
+      const textOperators = block.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*Tj|\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>|\([^()]*\))*)\]\s*TJ|<([0-9A-Fa-f]+)>\s*Tj/g) || [];
       
-      // Look for text operators in content streams
-      const textMatches = streamContent.match(/BT\s+([\s\S]*?)\s+ET/g) || [];
-      for (const textBlock of textMatches) {
-        // Extract text strings from text showing operators (Tj, TJ, etc.)
-        const strings = textBlock.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*Tj|\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>|\([^()]*\))*)\]\s*TJ|<([0-9A-Fa-f]+)>\s*Tj/g) || [];
-        
-        for (const str of strings) {
-          if (str.includes('(') && str.includes(')')) {
-            // Handle literal strings
-            const textMatch = str.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/);
-            if (textMatch && textMatch[1]) {
-              extractedText += decodePdfString(textMatch[1]) + ' ';
-            }
-          } else if (str.startsWith('[') && str.endsWith('TJ')) {
-            // Handle array TJ operators
-            const arrayContent = str.substring(1, str.indexOf(']'));
-            const arrayElements = arrayContent.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/g) || [];
-            for (const element of arrayElements) {
-              const elementText = element.substring(1, element.length - 1);
-              extractedText += decodePdfString(elementText) + ' ';
-            }
-          } else if (str.startsWith('<') && str.includes('>')) {
-            // Handle hex strings
-            const hexMatch = str.match(/<([0-9A-Fa-f]+)>/);
-            if (hexMatch && hexMatch[1]) {
-              extractedText += decodeHexString(hexMatch[1]) + ' ';
-            }
+      for (const operator of textOperators) {
+        // Handle literal strings (text in parentheses)
+        if (operator.includes('(') && operator.includes(')') && operator.includes('Tj')) {
+          const match = operator.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/);
+          if (match && match[1]) {
+            extractedText += decodePdfString(match[1]) + ' ';
+          }
+        }
+        // Handle text arrays with positioning information
+        else if (operator.includes('[') && operator.includes('TJ')) {
+          const textParts = operator.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/g) || [];
+          for (const part of textParts) {
+            const text = part.substring(1, part.length - 1);
+            extractedText += decodePdfString(text) + ' ';
+          }
+        }
+        // Handle hex-encoded strings
+        else if (operator.includes('<') && operator.includes('>')) {
+          const hexMatch = operator.match(/<([0-9A-Fa-f]+)>/);
+          if (hexMatch && hexMatch[1]) {
+            extractedText += decodeHexString(hexMatch[1]) + ' ';
           }
         }
       }
     }
     
-    // Strategy 2: Object dictionary text extraction
-    const objects = pdfContent.match(/\d+\s+\d+\s+obj\s+[\s\S]*?endobj/g) || [];
-    for (const obj of objects) {
-      // Look for text strings in objects
-      const textStrings = obj.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/g) || [];
-      for (const textString of textStrings) {
-        const text = textString.substring(1, textString.length - 1);
-        // Only include strings that look like actual text
-        if (text.length > 3 && /[a-zA-Z]{2,}/.test(text) && !/^[\d\s.]+$/.test(text)) {
-          extractedText += decodePdfString(text) + ' ';
-        }
-      }
+    // STRATEGY 2: Extract text from stream objects (compressed or not)
+    if (extractedText.length < 100) {
+      console.log("Trying stream extraction method");
+      const streams = pdfContent.match(/stream[\s\S]*?endstream/g) || [];
       
-      // Look for hex strings in objects
-      const hexStrings = obj.match(/<([0-9A-Fa-f]+)>/g) || [];
-      for (const hexString of hexStrings) {
-        const hex = hexString.substring(1, hexString.length - 1);
-        // Only include strings that look like actual text (at least 6 hex chars = 3 ASCII chars)
-        if (hex.length >= 6) {
-          const decoded = decodeHexString(hex);
-          if (decoded.length > 3 && /[a-zA-Z]{2,}/.test(decoded) && !/^[\d\s.]+$/.test(decoded)) {
-            extractedText += decoded + ' ';
+      for (const stream of streams) {
+        // Look for text patterns in streams
+        const textPatterns = stream.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/g) || [];
+        for (const pattern of textPatterns) {
+          const text = pattern.substring(1, pattern.length - 1);
+          // Filter out non-textual content
+          if (text.length > 2 && /[a-zA-Z]{2,}/.test(text)) {
+            extractedText += decodePdfString(text) + ' ';
           }
         }
       }
     }
     
-    // Strategy 3: Fallback pattern-based extraction for difficult PDFs
-    if (extractedText.trim().length < 150) {
-      console.log("Initial extraction yielded insufficient text, trying fallback method");
+    // STRATEGY 3: General pattern-based extraction for difficult PDFs
+    if (extractedText.length < 100) {
+      console.log("Using fallback pattern extraction method");
       
-      // Look for patterns that likely contain readable content
-      const contentPatterns = [
-        // Look for words and sentences (at least 4 chars long, contains letters, not just numbers)
+      // Extract potential text using various patterns
+      const extractionPatterns = [
+        // Extract parenthesized text (common PDF text format)
+        /\(([^()]{3,})\)/g,
+        // Look for words and sentences
         /[A-Za-z][A-Za-z0-9\s.,;:'"!?@#$%^&*()\-+=]{4,}/g,
-        // Look for continuous text blocks
-        /[A-Za-z][a-z]{3,}(?:\s+[A-Za-z][a-z]*){5,}/g
+        // Look for text blocks with reasonable words
+        /[A-Za-z][a-z]{2,}(?:\s+[A-Za-z][a-z]*){3,}/g
       ];
       
-      for (const pattern of contentPatterns) {
+      for (const pattern of extractionPatterns) {
         const matches = pdfContent.match(pattern) || [];
         for (const match of matches) {
-          if (match.length > 10 && /[A-Za-z]{3,}/.test(match) && !/^\s*[\d.]+\s*$/.test(match)) {
-            // Only include meaningful text
-            extractedText += match + ' ';
+          let text = match;
+          // Clean up parenthesized text
+          if (text.startsWith('(') && text.endsWith(')')) {
+            text = text.substring(1, text.length - 1);
+          }
+          
+          // Only include meaningful text chunks
+          if (text.length > 5 && /[A-Za-z]{3,}/.test(text) && !/^\s*[\d.]+\s*$/.test(text)) {
+            extractedText += text + ' ';
           }
         }
       }
     }
     
-    // Final processing and cleanup
+    // Clean up the extracted text
     extractedText = extractedText
       .replace(/\s+/g, ' ')
-      .replace(/(\w)-\s+(\w)/g, '$1$2') // Fix hyphenated words
-      .replace(/\s+([.,;:?!])/g, '$1') // Fix spacing before punctuation
+      .replace(/(\w)-\s+(\w)/g, '$1$2')  // Fix hyphenated words
+      .replace(/\s+([.,;:?!])/g, '$1')   // Fix spacing before punctuation
       .replace(/\b\d+\.\d+\.\d+\.\d+\b/g, '') // Remove IP addresses
-      .replace(/https?:\/\/\S+/g, '') // Remove URLs that might be in footer/headers
-      .replace(/www\.\S+/g, '') // Remove websites
-      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '') // Remove emails that might be in footer/headers
+      .replace(/https?:\/\/\S+/g, '')    // Remove URLs
+      .replace(/www\.\S+/g, '')          // Remove websites
       .trim();
     
-    console.log("Universal PDF text extraction complete, extracted length:", extractedText.length);
+    console.log("Enhanced PDF extraction complete, extracted text length:", extractedText.length);
     
-    if (extractedText.trim().length < 100) {
-      // For PDFs where we couldn't extract much, add generic text to prevent AI confusion
-      return "This document appears to be in a format that made text extraction difficult. " +
-        "If possible, please convert your resume to a plain text format or export it as text from your original document.";
+    if (extractedText.length < 100) {
+      console.warn("PDF extraction produced insufficient text");
+      return "This document appears to be a PDF with limited extractable text content. " +
+             "The system will attempt to analyze what was found, but for best results, " +
+             "please try converting your PDF to text format first.";
     }
     
     return extractedText;
   } catch (error) {
     console.error("Error in PDF text extraction:", error);
-    return "This document appears to be in a format that made text extraction difficult. " + 
-      "If possible, please convert your resume to a plain text format for the best analysis results.";
+    return "This PDF document could not be properly analyzed. Please try converting it to a text format.";
   }
 };
 
+// Helper functions for PDF text extraction
 const decodePdfString = (str: string): string => {
   return str
     .replace(/\\(\d{3})/g, (m, octal) => String.fromCharCode(parseInt(octal, 8)))
@@ -363,7 +357,8 @@ const decodePdfString = (str: string): string => {
     .replace(/\\\\/g, '\\')
     .replace(/\\n/g, '\n')
     .replace(/\\r/g, '\r')
-    .replace(/\\t/g, '\t');
+    .replace(/\\t/g, '\t')
+    .replace(/\\(\d{1})/g, '$1');  // Handle simple octal escapes
 };
 
 const decodeHexString = (hex: string): string => {
@@ -380,26 +375,26 @@ const decodeHexString = (hex: string): string => {
   return decoded;
 };
 
+// Enhanced Office document text extraction
 const extractOfficeDocumentText = (content: string): string => {
   try {
     let extractedText = '';
     
-    // For DOCX formats
-    const hasDocxStructure = content.includes('word/document.xml') || content.includes('[Content_Types].xml');
-    if (hasDocxStructure) {
-      // Try to find XML content within the file
-      const xmlMatches = content.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) || [];
-      for (const match of xmlMatches) {
-        const text = match.replace(/<w:t[^>]*>/, '').replace(/<\/w:t>/, '');
-        extractedText += text + ' ';
-      }
+    // For DOCX/XML formats
+    if (content.includes('word/document.xml') || content.includes('[Content_Types].xml')) {
+      console.log("Extracting text from DOCX format");
       
-      // Fallback for other XML-based content
-      const paragraphMatches = content.match(/<w:p\b[^>]*>[\s\S]*?<\/w:p>/g) || [];
-      for (const paragraph of paragraphMatches) {
-        const textMatches = paragraph.match(/>([^<]+)</g) || [];
-        for (const textMatch of textMatches) {
-          const text = textMatch.substring(1, textMatch.length - 1);
+      // Extract text from XML tags
+      const xmlTextTags = [
+        /<w:t[^>]*>([^<]*)<\/w:t>/g,          // Word text tags
+        /<a:t[^>]*>([^<]*)<\/a:t>/g,          // Other text tags
+        />([^<]{3,})</g                        // Text between XML tags
+      ];
+      
+      for (const pattern of xmlTextTags) {
+        const matches = content.match(pattern) || [];
+        for (const match of matches) {
+          const text = match.replace(/<[^>]+>/g, '');
           if (text.trim().length > 0) {
             extractedText += text + ' ';
           }
@@ -407,39 +402,52 @@ const extractOfficeDocumentText = (content: string): string => {
       }
     }
     
-    // For DOC formats and general fallback
-    if (extractedText.trim().length < 100) {
-      // Look for printable text sequences
-      const textMatches = content.match(/[A-Za-z][A-Za-z0-9\s.,;:'"!?@#$%^&*()-+=]{5,}/g) || [];
-      for (const match of textMatches) {
-        if (match.length > 10 && /[A-Za-z]{3,}/.test(match)) {
-          extractedText += match + ' ';
+    // For DOC binary formats and general fallback
+    if (extractedText.length < 100) {
+      console.log("Using binary document extraction or fallback method");
+      
+      // Extract text based on common patterns in binary documents
+      const textPatterns = [
+        // Look for sequences that appear to be words/sentences
+        /[A-Za-z][A-Za-z0-9\s.,;:'"!?@#$%^&*()-+=]{5,}/g,
+        // Look for capitalized phrases (likely headings)
+        /[A-Z][A-Z\s]{3,}/g,
+        // Look for text blocks
+        /[A-Za-z][a-z]{2,}(?:\s+[A-Za-z][a-z]*){3,}/g
+      ];
+      
+      for (const pattern of textPatterns) {
+        const matches = content.match(pattern) || [];
+        for (const match of matches) {
+          if (match.length > 5 && /[A-Za-z]{3,}/.test(match)) {
+            extractedText += match + ' ';
+          }
         }
       }
     }
     
-    // Final cleanup
+    // Clean up the extracted text
     extractedText = extractedText
       .replace(/\s+/g, ' ')
-      .replace(/\u0000/g, '') // Remove null bytes
-      .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+      .replace(/\u0000/g, '')              // Remove null bytes
+      .replace(/[\x00-\x1F\x7F]/g, '')     // Remove control characters
+      .replace(/(\w)-\s+(\w)/g, '$1$2')    // Fix hyphenated words
       .trim();
     
-    console.log("Office document text extraction complete, extracted length:", extractedText.length);
+    console.log("Office document extraction complete, text length:", extractedText.length);
     
-    if (extractedText.trim().length < 100) {
-      return "This document appears to be in a format that made text extraction difficult. " +
-        "Please convert your resume to a plain text format for better analysis results.";
+    if (extractedText.length < 100) {
+      return "This document format made text extraction difficult. Please consider saving your document as plain text for better analysis.";
     }
     
     return extractedText;
   } catch (error) {
     console.error("Error in Office document text extraction:", error);
-    return "This Office document format made text extraction difficult. " +
-      "Please consider saving your document as plain text (.txt) for better analysis.";
+    return "This document could not be properly analyzed. Please try saving it as plain text format.";
   }
 };
 
+// Text cleaning for plain text files
 const cleanTextContent = (text: string): string => {
   if (!text || text.length < 10) {
     return text;
@@ -461,31 +469,28 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     const reader = new FileReader();
     
     reader.onload = (e) => {
-      const text = e.target?.result as string;
-      console.log("File read complete, content length:", text.length);
+      const content = e.target?.result as string;
+      console.log("File read complete, content length:", content.length);
       
+      // Process based on file type
       if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        console.log("Processing PDF content for extraction");
-        const extractedText = extractReadableText(text);
-        
-        if (extractedText.length < 50) {
-          console.warn("PDF extraction produced insufficient text:", extractedText.length);
-        }
-        
+        console.log("Processing PDF file");
+        const extractedText = extractReadableText(content);
         resolve(extractedText);
       } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
                 file.name.toLowerCase().endsWith('.docx')) {
-        console.log("Processing DOCX content for extraction");
-        const extractedText = extractReadableText(text);
+        console.log("Processing DOCX file");
+        const extractedText = extractReadableText(content);
         resolve(extractedText);
       } else if (file.type === 'application/msword' || 
                 file.name.toLowerCase().endsWith('.doc')) {
-        console.log("Processing DOC content for extraction");
-        const extractedText = extractReadableText(text);
+        console.log("Processing DOC file");
+        const extractedText = extractReadableText(content);
         resolve(extractedText);
       } else {
-        // For plain text files, just use the content directly
-        resolve(text);
+        // For plain text files
+        console.log("Processing plain text file");
+        resolve(content);
       }
     };
     
@@ -494,22 +499,17 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       reject(new Error('Error reading file'));
     };
     
-    // Use appropriate reading method based on file type
-    if (file.type === 'application/pdf' || 
-        file.name.toLowerCase().endsWith('.pdf') ||
-        file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
-        file.name.toLowerCase().endsWith('.docx') ||
-        file.type === 'application/msword' || 
-        file.name.toLowerCase().endsWith('.doc')) {
-      console.log("Reading binary file");
+    // Use the appropriate reading method based on file type
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf') ||
+        file.type.includes('officedocument') || file.name.match(/\.(docx|doc)$/i)) {
       reader.readAsBinaryString(file);
     } else {
-      console.log("Reading as text");
       reader.readAsText(file);
     }
   });
 };
 
+// Validate and fix analysis result structure
 const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): AnalysisResultData => {
   // Check if all required properties exist and have valid values
   const hasValidStructure = result.overallScore !== undefined && 
@@ -518,7 +518,6 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
                            result.recommendations !== undefined &&
                            result.atsScores !== undefined;
   
-  // Generate a generic but useful analysis if the result structure is invalid
   if (!hasValidStructure) {
     console.warn("Received invalid analysis structure from AI, generating fallback analysis");
     return generateFallbackAnalysis(result);
@@ -537,7 +536,7 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
     keyInsights: Array.isArray(result.keyInsights) && result.keyInsights.length > 0
                  ? result.keyInsights
                  : [
-                     { type: "positive", text: "Your resume has content that can be analyzed for improvement." },
+                     { type: "positive", text: "Your resume contains valuable content that can be analyzed for improvement." },
                      { type: "warning", text: "Consider adding more specific achievements and metrics to strengthen your experience section." },
                      { type: "negative", text: "Your resume may not be optimized for ATS systems based on the format." }
                    ],
@@ -568,12 +567,15 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
       keywords: (result.atsScores?.keywords ?? 70),
       formatting: (result.atsScores?.formatting ?? 60)
     },
-    detectedKeywords: Array.isArray(result.detectedKeywords) ? result.detectedKeywords : []
+    detectedKeywords: Array.isArray(result.detectedKeywords) && result.detectedKeywords.length > 0 
+                     ? result.detectedKeywords 
+                     : ["skills", "experience", "education", "communication", "teamwork"]
   };
   
   return validResult;
 };
 
+// Generate fallback analysis when AI response is invalid
 const generateFallbackAnalysis = (partialResult: Partial<AnalysisResultData>): AnalysisResultData => {
   return {
     overallScore: 65,
