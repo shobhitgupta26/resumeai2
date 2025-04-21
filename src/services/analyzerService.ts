@@ -110,6 +110,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
       - Do not use generic feedback
       - Be constructive but honest in your assessment
       - Provide actionable recommendations based on the actual content
+      - If you cannot extract meaningful text from the resume, provide appropriate feedback about the format rather than claiming there's gibberish
     `;
 
     console.log("Sending request to Gemini API...");
@@ -195,113 +196,121 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
 };
 
 const extractReadableText = (content: string): string => {
-  if (content.startsWith('%PDF') || content.includes('%%EOF') || /^\s*%PDF/.test(content)) {
-    console.log("Detected PDF content, applying advanced extraction");
-    return extractTextFromPDF(content);
+  if (!content || content.length < 10) {
+    return content;
   }
   
-  return cleanTextContent(content);
+  try {
+    // Check if it's likely a PDF (basic signature detection)
+    const isPDF = content.startsWith('%PDF') || 
+                 content.includes('%%EOF') || 
+                 /^\s*%PDF/.test(content) ||
+                 content.includes('/Type /Page') ||
+                 content.includes('/Contents');
+    
+    if (isPDF) {
+      console.log("Detected PDF content, applying enhanced extraction");
+      return enhancedPDFTextExtraction(content);
+    }
+    
+    return cleanTextContent(content);
+  } catch (error) {
+    console.error("Error in text extraction:", error);
+    return cleanTextContent(content);
+  }
 };
 
-// Simplified and improved PDF text extraction function
-const extractTextFromPDF = (pdfContent: string): string => {
+const enhancedPDFTextExtraction = (pdfContent: string): string => {
   let extractedText = '';
   
   try {
-    // Find all text content from various PDF structures
-    const allTextMatches = [];
+    // Combined PDF text extraction methods
     
-    // Method 1: Find text within parentheses after "Tj" operators (most common text encoding)
-    const tjMatches = pdfContent.matchAll(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)\s*Tj/g);
-    for (const match of tjMatches) {
-      if (match[1] && match[1].length > 1) {
-        allTextMatches.push(match[1]);
-      }
-    }
+    // Method 1: Extract text using multiple patterns commonly found in PDFs
+    const patterns = [
+      // Standard text objects
+      /\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})+)\)\s*Tj/g,
+      // Array-based text objects
+      /\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>|\([^()]*\))*)\]\s*TJ/g,
+      // Hex-encoded text
+      /<([0-9A-Fa-f]+)>\s*Tj/g,
+      // Stream content with BT/ET markers (Begin/End Text)
+      /BT\s*([\s\S]*?)\s*ET/g,
+      // General text searches with length filters
+      /\(([A-Za-z0-9\s.,;:'"!?-]{10,})\)/g,
+      // Text within content streams
+      /stream\s*([\s\S]*?)\s*endstream/g
+    ];
     
-    // Method 2: Find text within arrays with "TJ" operators (spacing-aware text)
-    const tjArrayMatches = pdfContent.matchAll(/\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>)*)\]\s*TJ/g);
-    for (const match of tjArrayMatches) {
-      if (match[1]) {
-        // Extract string parts from the TJ array
-        const stringMatches = match[1].match(/\(((?:[^()\\]|\\[()]|\\\\|\\[0-9]{3})*)\)/g) || [];
-        for (const strMatch of stringMatches) {
-          if (strMatch && strMatch.length > 2) { // Longer than just ()
-            allTextMatches.push(strMatch.slice(1, -1));
-          }
-        }
-      }
-    }
-    
-    // Method 3: Find text within hex notation (usually used for non-ASCII text)
-    const hexMatches = pdfContent.matchAll(/<([0-9A-Fa-f]+)>\s*Tj/g);
-    for (const match of hexMatches) {
-      if (match[1] && match[1].length > 0) {
-        let text = '';
-        for (let i = 0; i < match[1].length; i += 2) {
-          if (i + 1 < match[1].length) {
-            const charCode = parseInt(match[1].slice(i, i + 2), 16);
-            if (charCode >= 32 && charCode <= 126) { // Printable ASCII
-              text += String.fromCharCode(charCode);
+    // Process each pattern
+    for (const pattern of patterns) {
+      const matches = pdfContent.matchAll(pattern);
+      for (const match of matches) {
+        const capturedText = match[1];
+        if (capturedText && capturedText.length > 5) {
+          // Process based on pattern type
+          if (pattern.toString().includes('TJ')) {
+            // Process TJ arrays
+            const textParts = capturedText.match(/\(([^()]*)\)/g) || [];
+            for (const part of textParts) {
+              if (part && part.length > 2) { // More than just empty ()
+                extractedText += part.substring(1, part.length - 1) + ' ';
+              }
             }
+          } else if (pattern.toString().includes('<')) {
+            // Decode hex text
+            let decodedText = '';
+            for (let i = 0; i < capturedText.length; i += 2) {
+              if (i + 1 < capturedText.length) {
+                const hexCode = capturedText.substring(i, i + 2);
+                const charCode = parseInt(hexCode, 16);
+                if (charCode >= 32 && charCode <= 126) { // Printable ASCII range
+                  decodedText += String.fromCharCode(charCode);
+                }
+              }
+            }
+            if (decodedText.length > 3) {
+              extractedText += decodedText + ' ';
+            }
+          } else if (pattern.toString().includes('BT')) {
+            // Extract text between BT/ET markers
+            const textOperations = capturedText.match(/\([^()]*\)\s*Tj|\[[^\[\]]*\]\s*TJ|<[0-9A-Fa-f]+>\s*Tj/g) || [];
+            for (const op of textOperations) {
+              if (op.includes('(') && op.includes(')')) {
+                const textMatch = op.match(/\(([^()]*)\)/);
+                if (textMatch && textMatch[1]) {
+                  extractedText += textMatch[1] + ' ';
+                }
+              }
+            }
+          } else if (pattern.toString().includes('stream')) {
+            // Process stream content
+            const textFragments = capturedText.match(/[a-zA-Z][a-zA-Z0-9 .,;:'"!?-]{5,}/g) || [];
+            for (const fragment of textFragments) {
+              if (fragment.length > 10 && /[a-zA-Z]{3,}/.test(fragment)) {
+                extractedText += fragment + ' ';
+              }
+            }
+          } else {
+            // General text capture
+            extractedText += capturedText + ' ';
           }
         }
-        if (text.length > 0) {
-          allTextMatches.push(text);
-        }
       }
     }
     
-    // Method 4: More general search for text within parentheses
-    const generalMatches = pdfContent.matchAll(/\(([^\\\(\)]{2,})\)/g);
-    for (const match of generalMatches) {
-      if (match[1] && match[1].length > 1 && /[a-zA-Z0-9]/.test(match[1])) {
-        allTextMatches.push(match[1]);
-      }
-    }
-    
-    // Handle escaping and build the final text
-    for (let textChunk of allTextMatches) {
-      textChunk = textChunk
-        .replace(/\\(\d{3})/g, (m, code) => String.fromCharCode(parseInt(code, 8)))
-        .replace(/\\\(/g, '(')
-        .replace(/\\\)/g, ')')
-        .replace(/\\\\/g, '\\');
+    // If we still don't have much text, try a more aggressive approach
+    if (extractedText.length < 100) {
+      console.log("Initial extraction yielded insufficient text, trying secondary method");
       
-      if (/[a-zA-Z0-9]/.test(textChunk)) {
-        extractedText += textChunk + ' ';
-      }
-    }
-    
-    // Clean up and format
-    extractedText = extractedText
-      .replace(/\s+/g, ' ')
-      .replace(/([a-z])-\s+([a-z])/gi, '$1$2')  // Fix hyphenated words
-      .trim();
-    
-    // Additional cleaning for PDF artifacts
-    extractedText = extractedText
-      .replace(/\s*\b[A-Z][0-9]+\b\s*/g, ' ') // Remove font codes
-      .replace(/\s+/g, ' ')
-      .trim();
-    
-    console.log("Extracted text length:", extractedText.length);
-    
-    if (extractedText.length < 50) {
-      console.warn("PDF extraction produced little text, trying fallback method");
-      
-      // Fallback method: try to find any meaningful text
-      const contentMatches = pdfContent.match(/stream[\r\n]([\s\S]*?)[\r\n]endstream/g) || [];
+      // Method 2: Look for any meaningful text fragments in the entire PDF
+      const fallbackMatches = pdfContent.match(/[A-Za-z][A-Za-z0-9\s.,;:'"!?@#$%^&*()-+=]{5,}/g) || [];
       let fallbackText = '';
       
-      for (const streamMatch of contentMatches) {
-        const streamContent = streamMatch.replace(/^stream[\r\n]|[\r\n]endstream$/g, '');
-        const textFragments = streamContent.match(/[a-zA-Z0-9][a-zA-Z0-9 .\-,:;?!\n]{5,}/g) || [];
-        
-        for (const fragment of textFragments) {
-          if (fragment.length > 10 && /[a-zA-Z]{3,}/.test(fragment)) {
-            fallbackText += fragment + ' ';
-          }
+      for (const fragment of fallbackMatches) {
+        // Filter for likely meaningful content
+        if (fragment.length > 10 && /[A-Za-z]{3,}/.test(fragment) && !/^\s*[0-9.]+\s*$/.test(fragment)) {
+          fallbackText += fragment + ' ';
         }
       }
       
@@ -309,12 +318,29 @@ const extractTextFromPDF = (pdfContent: string): string => {
         extractedText = fallbackText;
       }
     }
+    
+    // Final processing - handle PDF-specific character issues
+    extractedText = extractedText
+      .replace(/\\(\d{3})/g, (m, octal) => String.fromCharCode(parseInt(octal, 8)))
+      .replace(/\\\(/g, '(')
+      .replace(/\\\)/g, ')')
+      .replace(/\\\\/g, '\\')
+      .replace(/\s+/g, ' ')
+      .replace(/(\w)-\s+(\w)/g, '$1$2') // Fix hyphenated words
+      .trim();
+      
+    console.log("PDF text extraction complete, extracted length:", extractedText.length);
+    
+    if (extractedText.length < 50) {
+      // If we still don't have enough text, provide a fallback message
+      return "The resume appears to be in PDF format, but meaningful text could not be extracted. Try uploading a plain text version of your resume for better results.";
+    }
+    
+    return extractedText;
   } catch (error) {
     console.error("Error in PDF text extraction:", error);
-    extractedText = "Failed to extract text from PDF. Please try a different file format.";
+    return "Error extracting text from PDF. Please try a different file format, such as .txt or .docx.";
   }
-  
-  return cleanTextContent(extractedText);
 };
 
 const cleanTextContent = (text: string): string => {
@@ -382,6 +408,62 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): AnalysisResultData => {
+  const hasValidScores = result.overallScore && result.overallScore > 0;
+  
+  if (!hasValidScores && result.keyInsights && result.keyInsights.length > 0 && 
+      result.keyInsights[0].text && result.keyInsights[0].text.includes("gibberish")) {
+    // This is likely a text extraction issue with the PDF, provide better feedback
+    return {
+      overallScore: 50, // Provide a neutral score
+      sections: {
+        content: { score: 50 },
+        formatting: { score: 50 },
+        keywords: { score: 50 },
+        relevance: { score: 50 }
+      },
+      keyInsights: [
+        { 
+          type: "warning", 
+          text: "We had trouble extracting readable text from your resume. For the best analysis, consider uploading a plain text (.txt) or Word (.docx) version of your resume." 
+        },
+        { 
+          type: "warning", 
+          text: "The format of your PDF file might be making it difficult to analyze its content properly." 
+        },
+        { 
+          type: "positive", 
+          text: "Your resume has been processed, but we recommend checking our formatting tips below to ensure your resume is ATS-friendly." 
+        }
+      ],
+      recommendations: [
+        {
+          category: "formatting",
+          title: "Convert to ATS-friendly format",
+          description: "Your resume might be using a format that's difficult for Applicant Tracking Systems (ATS) to read. Consider using a simpler format without complex layouts, tables, or graphics.",
+          examples: "Use standard headings like 'Experience', 'Education', and 'Skills' with simple formatting."
+        },
+        {
+          category: "content",
+          title: "Ensure text is selectable in your PDF",
+          description: "Some PDFs contain images of text rather than actual text characters. Make sure your resume contains real text that can be selected and copied.",
+          examples: "Try opening your PDF and selecting text - if you cannot select individual words, it might be an image."
+        },
+        {
+          category: "other",
+          title: "Try uploading a different file format",
+          description: "For the most accurate analysis, try uploading a plain text (.txt) or Word (.docx) version of your resume.",
+          examples: "Many word processors allow you to save or export your document in multiple formats."
+        }
+      ],
+      atsScores: {
+        readability: 50,
+        keywords: 40,
+        formatting: 50
+      },
+      detectedKeywords: result.detectedKeywords || []
+    };
+  }
+
   const validResult: AnalysisResultData = {
     overallScore: typeof result.overallScore === 'number' ? result.overallScore : 50,
     sections: {
@@ -392,14 +474,14 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
       ...result.sections
     },
     keyInsights: result.keyInsights || [
-      { type: "negative", text: "Unable to generate specific insights. Please try uploading a different file format." }
+      { type: "warning", text: "We couldn't fully analyze your resume. Try uploading a different file format for better results." }
     ],
     recommendations: result.recommendations || [
       {
         category: "content",
-        title: "Unable to analyze resume content",
-        description: "We couldn't properly analyze your resume. Try uploading a plain text (.txt) version for better results.",
-        examples: "Convert your resume to plain text format to ensure all content is properly analyzed."
+        title: "Use a different file format",
+        description: "For better analysis, try uploading a plain text (.txt) or Word (.docx) version of your resume.",
+        examples: "Many word processors allow you to save or export your document in multiple formats."
       }
     ],
     atsScores: {
