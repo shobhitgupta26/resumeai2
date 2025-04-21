@@ -1,4 +1,3 @@
-
 interface ResumeAnalysisRequest {
   text: string;
 }
@@ -52,6 +51,9 @@ export interface SavedAnalysis {
 
 const GEMINI_API_KEY = "AIzaSyAEvHNa-fRhkLRnEyLHhR2Cp9t8memXYSg";
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
+
+import * as pdfjsLib from 'pdfjs-dist';
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const analyzeResume = async (fileContent: string): Promise<AnalysisResultData> => {
   try {
@@ -196,8 +198,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
   }
 };
 
-// Enhanced function for extracting text from various file formats
-const extractReadableText = (content: string): string => {
+const extractReadableText = async (content: string): Promise<string> => {
   if (!content || content.length < 10) {
     return content;
   }
@@ -205,9 +206,9 @@ const extractReadableText = (content: string): string => {
   try {
     // Check for PDF binary content
     const isPDF = content.includes('%PDF') || 
-                 content.includes('%%EOF') || 
-                 content.includes('/Type /Page') ||
-                 content.includes('/Contents');
+                  content.includes('%%EOF') || 
+                  content.includes('/Type /Page') ||
+                  content.includes('/Contents');
     
     // Check for Office XML format
     const isDocx = content.includes('PK') && 
@@ -221,7 +222,7 @@ const extractReadableText = (content: string): string => {
     console.log("File format detection: PDF=", isPDF, "DOCX=", isDocx, "DOC=", isDoc);
     
     if (isPDF) {
-      return enhancedPDFTextExtraction(content);
+      return await extractPDFText(content);
     } else if (isDocx || isDoc) {
       return extractOfficeDocumentText(content);
     }
@@ -234,66 +235,60 @@ const extractReadableText = (content: string): string => {
   }
 };
 
-// New improved PDF text extraction function
-const enhancedPDFTextExtraction = (pdfContent: string): string => {
-  console.log("Enhanced PDF extraction started");
-  let extractedText = '';
-  
+const extractPDFText = async (pdfContent: string): Promise<string> => {
   try {
-    // STRATEGY 1: Find text between BT (Begin Text) and ET (End Text) operators
-    const textBlocks = pdfContent.match(/BT[\s\S]*?ET/g) || [];
+    console.log("Extracting text using PDF.js");
     
-    for (const block of textBlocks) {
-      // Extract text strings using common PDF text operators
-      const textOperators = block.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*Tj|\[((?:[^[\]\\]|\\.|<[0-9A-Fa-f]+>|\([^()]*\))*)\]\s*TJ|<([0-9A-Fa-f]+)>\s*Tj/g) || [];
-      
-      for (const operator of textOperators) {
-        // Handle literal strings (text in parentheses)
-        if (operator.includes('(') && operator.includes(')') && operator.includes('Tj')) {
-          const match = operator.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/);
-          if (match && match[1]) {
-            extractedText += decodePdfString(match[1]) + ' ';
-          }
-        }
-        // Handle text arrays with positioning information
-        else if (operator.includes('[') && operator.includes('TJ')) {
-          const textParts = operator.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/g) || [];
-          for (const part of textParts) {
-            const text = part.substring(1, part.length - 1);
-            extractedText += decodePdfString(text) + ' ';
-          }
-        }
-        // Handle hex-encoded strings
-        else if (operator.includes('<') && operator.includes('>')) {
-          const hexMatch = operator.match(/<([0-9A-Fa-f]+)>/);
-          if (hexMatch && hexMatch[1]) {
-            extractedText += decodeHexString(hexMatch[1]) + ' ';
-          }
-        }
+    // Convert binary string to array buffer
+    const bytes = new Uint8Array(pdfContent.length);
+    for (let i = 0; i < pdfContent.length; i++) {
+      bytes[i] = pdfContent.charCodeAt(i) & 0xff;
+    }
+    
+    // Load the PDF document
+    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    console.log("PDF loaded successfully, pages:", pdf.numPages);
+    
+    let fullText = '';
+    
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      try {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        
+        // Extract and join the text items
+        const pageText = textContent.items
+          .map((item: any) => {
+            // Some PDF.js versions return different object structures
+            if (typeof item.str === 'string') {
+              return item.str;
+            } else if (item.chars) {
+              return item.chars.map((char: any) => char.unicode).join('');
+            }
+            return '';
+          })
+          .join(' ');
+        
+        fullText += pageText + '\n\n';
+      } catch (pageError) {
+        console.error(`Error extracting text from page ${pageNum}:`, pageError);
+        // Continue with other pages even if one fails
       }
     }
     
-    // STRATEGY 2: Extract text from stream objects (compressed or not)
-    if (extractedText.length < 100) {
-      console.log("Trying stream extraction method");
-      const streams = pdfContent.match(/stream[\s\S]*?endstream/g) || [];
-      
-      for (const stream of streams) {
-        // Look for text patterns in streams
-        const textPatterns = stream.match(/\(([^()\\]*(?:\\.[^()\\]*)*)\)/g) || [];
-        for (const pattern of textPatterns) {
-          const text = pattern.substring(1, pattern.length - 1);
-          // Filter out non-textual content
-          if (text.length > 2 && /[a-zA-Z]{2,}/.test(text)) {
-            extractedText += decodePdfString(text) + ' ';
-          }
-        }
-      }
-    }
+    // Clean up the extracted text
+    let cleanedText = fullText
+      .replace(/\s+/g, ' ')
+      .replace(/(\w)-\s+(\w)/g, '$1$2')  // Fix hyphenated words
+      .replace(/\s+([.,;:?!])/g, '$1')   // Fix spacing before punctuation
+      .trim();
     
-    // STRATEGY 3: General pattern-based extraction for difficult PDFs
-    if (extractedText.length < 100) {
-      console.log("Using fallback pattern extraction method");
+    console.log("PDF.js extraction complete, extracted text length:", cleanedText.length);
+    
+    if (cleanedText.length < 100) {
+      // Fall back to the old extraction methods if PDF.js extraction is insufficient
+      console.log("PDF.js extraction produced insufficient text, falling back to pattern-based extraction");
       
       // Extract potential text using various patterns
       const extractionPatterns = [
@@ -316,66 +311,20 @@ const enhancedPDFTextExtraction = (pdfContent: string): string => {
           
           // Only include meaningful text chunks
           if (text.length > 5 && /[A-Za-z]{3,}/.test(text) && !/^\s*[\d.]+\s*$/.test(text)) {
-            extractedText += text + ' ';
+            cleanedText += text + ' ';
           }
         }
       }
     }
     
-    // Clean up the extracted text
-    extractedText = extractedText
-      .replace(/\s+/g, ' ')
-      .replace(/(\w)-\s+(\w)/g, '$1$2')  // Fix hyphenated words
-      .replace(/\s+([.,;:?!])/g, '$1')   // Fix spacing before punctuation
-      .replace(/\b\d+\.\d+\.\d+\.\d+\b/g, '') // Remove IP addresses
-      .replace(/https?:\/\/\S+/g, '')    // Remove URLs
-      .replace(/www\.\S+/g, '')          // Remove websites
-      .trim();
+    return cleanedText || "This PDF document could not be properly analyzed. Please try converting it to a text format.";
     
-    console.log("Enhanced PDF extraction complete, extracted text length:", extractedText.length);
-    
-    if (extractedText.length < 100) {
-      console.warn("PDF extraction produced insufficient text");
-      return "This document appears to be a PDF with limited extractable text content. " +
-             "The system will attempt to analyze what was found, but for best results, " +
-             "please try converting your PDF to text format first.";
-    }
-    
-    return extractedText;
   } catch (error) {
-    console.error("Error in PDF text extraction:", error);
-    return "This PDF document could not be properly analyzed. Please try converting it to a text format.";
+    console.error("Error in PDF.js text extraction:", error);
+    return "There was an error processing your PDF. Please try a different format or convert to plain text.";
   }
 };
 
-// Helper functions for PDF text extraction
-const decodePdfString = (str: string): string => {
-  return str
-    .replace(/\\(\d{3})/g, (m, octal) => String.fromCharCode(parseInt(octal, 8)))
-    .replace(/\\\(/g, '(')
-    .replace(/\\\)/g, ')')
-    .replace(/\\\\/g, '\\')
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '\r')
-    .replace(/\\t/g, '\t')
-    .replace(/\\(\d{1})/g, '$1');  // Handle simple octal escapes
-};
-
-const decodeHexString = (hex: string): string => {
-  let decoded = '';
-  for (let i = 0; i < hex.length; i += 2) {
-    if (i + 1 < hex.length) {
-      const charCode = parseInt(hex.substring(i, i + 2), 16);
-      // Only include printable ASCII and common Unicode characters
-      if ((charCode >= 32 && charCode <= 126) || charCode >= 160) {
-        decoded += String.fromCharCode(charCode);
-      }
-    }
-  }
-  return decoded;
-};
-
-// Enhanced Office document text extraction
 const extractOfficeDocumentText = (content: string): string => {
   try {
     let extractedText = '';
@@ -447,7 +396,6 @@ const extractOfficeDocumentText = (content: string): string => {
   }
 };
 
-// Text cleaning for plain text files
 const cleanTextContent = (text: string): string => {
   if (!text || text.length < 10) {
     return text;
@@ -468,15 +416,20 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     console.log("Extracting text from file:", file.name, "Type:", file.type);
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result as string;
       console.log("File read complete, content length:", content.length);
       
       // Process based on file type
       if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
         console.log("Processing PDF file");
-        const extractedText = extractReadableText(content);
-        resolve(extractedText);
+        try {
+          const extractedText = await extractReadableText(content);
+          resolve(extractedText);
+        } catch (error) {
+          console.error("Error extracting PDF text:", error);
+          reject(new Error("Error extracting text from PDF"));
+        }
       } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
                 file.name.toLowerCase().endsWith('.docx')) {
         console.log("Processing DOCX file");
@@ -509,7 +462,6 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
   });
 };
 
-// Validate and fix analysis result structure
 const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): AnalysisResultData => {
   // Check if all required properties exist and have valid values
   const hasValidStructure = result.overallScore !== undefined && 
@@ -575,7 +527,6 @@ const validateAndFixAnalysisResult = (result: Partial<AnalysisResultData>): Anal
   return validResult;
 };
 
-// Generate fallback analysis when AI response is invalid
 const generateFallbackAnalysis = (partialResult: Partial<AnalysisResultData>): AnalysisResultData => {
   return {
     overallScore: 65,

@@ -25,10 +25,20 @@ export default function FileUpload({
   processingStage 
 }: FileUploadProps) {
   const { toast } = useToast();
+  const [localLoading, setLocalLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      
+      // Show toast for PDF files to set expectations
+      if (selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf')) {
+        toast({
+          title: "PDF file detected",
+          description: "PDF processing may take a moment for best results",
+        });
+      }
+      
       onFileSelect(selectedFile);
     }
   };
@@ -42,7 +52,13 @@ export default function FileUpload({
       });
       return;
     }
-    await onAnalyze();
+    
+    setLocalLoading(true);
+    try {
+      await onAnalyze();
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
   return (
@@ -64,15 +80,16 @@ export default function FileUpload({
             onChange={handleFileChange}
             accept=".pdf,.docx,.doc,.txt"
             className="cursor-pointer border-dashed hover:border-indigo-500/50 focus:border-indigo-500/50 transition-colors dark:bg-gray-800 dark:text-gray-300"
+            disabled={loading || localLoading}
           />
         </div>
         <Button 
           onClick={handleAnalyze} 
-          disabled={!file || loading}
+          disabled={!file || loading || localLoading}
           className="w-full sm:w-auto shadow-md bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white"
           size="lg"
         >
-          {loading ? (
+          {loading || localLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               {processingStage || "Analyzing..."}
