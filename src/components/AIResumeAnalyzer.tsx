@@ -104,14 +104,21 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Score Display */}
-        <Card className="w-48 h-48 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-100 to-white dark:from-indigo-950 dark:to-gray-900">
-          <div className="text-5xl font-bold text-indigo-600 dark:text-indigo-400">
-            {analysisResults?.overallScore || "53"}
+        <Card className="w-full md:w-48 h-48 flex flex-col items-center justify-center bg-gradient-to-br from-indigo-100 to-white dark:from-indigo-900/40 dark:to-gray-900/60 shadow-md">
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-full opacity-30 blur-xl bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse"></div>
+            <div className="relative text-5xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+              {analysisResults?.overallScore || "53"}
+            </div>
           </div>
           <div className="text-sm text-muted-foreground mt-2">OVERALL SCORE</div>
-          <Star className="h-5 w-5 text-amber-500 mt-2" />
+          <div className="flex items-center gap-0.5 mt-2">
+            {[1, 2, 3, 4, 5].map((_, i) => (
+              <Star key={i} className={`h-4 w-4 ${i < 3 ? "text-amber-500 fill-amber-500" : "text-amber-500/30"}`} />
+            ))}
+          </div>
         </Card>
 
         <div className="flex-1 space-y-4">
@@ -120,14 +127,14 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
             {resumeData?.personalInfo?.name?.split(" ")[0] || "there"}.
           </h2>
           <p className="text-muted-foreground">
-            Welcome to your resume review. Let's analyze your resume to help you improve it.
+            Welcome to your resume review. Let's analyze your resume to help you improve it and stand out from the competition.
           </p>
 
           <Button 
             onClick={handleAnalyzeResume} 
             disabled={isAnalyzing}
             variant="default"
-            className="gap-2 w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+            className="gap-2 w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 dark:from-indigo-600 dark:to-purple-600 text-white shadow-md"
           >
             {isAnalyzing ? (
               <>
