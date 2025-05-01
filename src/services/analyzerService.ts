@@ -59,7 +59,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
   try {
     console.log("Analyzing resume with content length:", fileContent.length);
     
-    const cleanContent = extractReadableText(fileContent);
+    const cleanContent = await extractReadableText(fileContent);
     console.log("Cleaned content length:", cleanContent.length);
     
     if (cleanContent.length < 50) {
@@ -433,13 +433,23 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
       } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
                 file.name.toLowerCase().endsWith('.docx')) {
         console.log("Processing DOCX file");
-        const extractedText = extractReadableText(content);
-        resolve(extractedText);
+        try {
+          const extractedText = await extractReadableText(content);
+          resolve(extractedText);
+        } catch (error) {
+          console.error("Error extracting DOCX text:", error);
+          reject(new Error("Error extracting text from DOCX"));
+        }
       } else if (file.type === 'application/msword' || 
                 file.name.toLowerCase().endsWith('.doc')) {
         console.log("Processing DOC file");
-        const extractedText = extractReadableText(content);
-        resolve(extractedText);
+        try {
+          const extractedText = await extractReadableText(content);
+          resolve(extractedText);
+        } catch (error) {
+          console.error("Error extracting DOC text:", error);
+          reject(new Error("Error extracting text from DOC"));
+        }
       } else {
         // For plain text files
         console.log("Processing plain text file");
