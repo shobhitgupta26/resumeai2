@@ -72,7 +72,7 @@ const App = () => {
                       routing="path" 
                       path="/sign-in" 
                       signUpUrl="/sign-up"
-                      redirectUrl="/builder"
+                      redirectUrl="/"
                       appearance={{
                         elements: {
                           rootBox: "mx-auto w-full max-w-md",
@@ -100,7 +100,7 @@ const App = () => {
                       routing="path" 
                       path="/sign-up" 
                       signInUrl="/sign-in"
-                      redirectUrl="/builder"
+                      redirectUrl="/"
                       appearance={{
                         elements: {
                           rootBox: "mx-auto w-full max-w-md",
