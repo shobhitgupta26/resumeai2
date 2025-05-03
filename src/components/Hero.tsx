@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
-import { ChevronRight, Stars, Bot } from "lucide-react";
+import { ChevronRight, Stars, Bot, GraduationCap, Book } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 export default function Hero() {
@@ -58,18 +58,14 @@ export default function Hero() {
           </div>
           
           <div className="mt-12 flex items-center gap-4 animate-on-scroll opacity-0" style={{ animationDelay: "0.8s" }}>
-            <div className="flex">
-              <div className="h-10 w-10 rounded-full border-2 border-background bg-yellow-500 -ml-0"></div>
-              <div className="h-10 w-10 rounded-full border-2 border-background bg-red-500 -ml-4"></div>
-              <div className="h-10 w-10 rounded-full border-2 border-background bg-blue-500 -ml-4"></div>
-              <div className="h-10 w-10 rounded-full border-2 border-background bg-green-500 -ml-4"></div>
-              <div className="h-10 w-10 rounded-full border-2 border-background bg-purple-500 -ml-4"></div>
+            <div className="flex items-center justify-center bg-primary/10 p-3 rounded-full">
+              <GraduationCap className="h-10 w-10 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-medium">3,900+ happy customers</p>
-              <div className="flex items-center text-yellow-500">
-                <span>★★★★★</span>
-                <span className="text-xs text-muted-foreground ml-1">shared their experience</span>
+              <p className="text-sm font-medium">College Project Showcase</p>
+              <div className="flex items-center gap-1">
+                <Book className="h-4 w-4 text-primary" />
+                <span className="text-xs text-muted-foreground">Created by Computer Science students</span>
               </div>
             </div>
           </div>
