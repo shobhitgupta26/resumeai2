@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
-import { ChevronRight, Stars, Bot, GraduationCap, Book } from "lucide-react";
+import { ChevronRight, Stars, Bot, FileText, CheckCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 export default function Hero() {
@@ -59,13 +59,13 @@ export default function Hero() {
           
           <div className="mt-12 flex items-center gap-4 animate-on-scroll opacity-0" style={{ animationDelay: "0.8s" }}>
             <div className="flex items-center justify-center bg-primary/10 p-3 rounded-full">
-              <GraduationCap className="h-10 w-10 text-primary" />
+              <FileText className="h-10 w-10 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-medium">College Project Showcase</p>
+              <p className="text-sm font-medium">ATS-Friendly Templates</p>
               <div className="flex items-center gap-1">
-                <Book className="h-4 w-4 text-primary" />
-                <span className="text-xs text-muted-foreground">Created by Computer Science students</span>
+                <CheckCircle className="h-4 w-4 text-primary" />
+                <span className="text-xs text-muted-foreground">Optimized for applicant tracking systems</span>
               </div>
             </div>
           </div>
