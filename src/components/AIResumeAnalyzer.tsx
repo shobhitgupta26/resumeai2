@@ -1,12 +1,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, Loader2, AlertCircle, FileText, Star } from "lucide-react";
+import { Brain, Loader2, AlertCircle, FileText, Star, Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume } from "@/services/analyzerService";
 import { AnalysisResultData } from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
+import { apiKeyService } from "@/services/ApiKeyService";
+import ApiKeyManager from "@/components/ApiKeyManager";
 
 interface AIResumeAnalyzerProps {
   resumeData: any;
@@ -20,8 +22,19 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
   const [error, setError] = useState<string | null>(null);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResultData | null>(null);
   const { toast } = useToast();
+  const hasApiKey = apiKeyService.hasApiKey("GEMINI_API_KEY");
 
   const handleAnalyzeResume = async () => {
+    // Check for API key
+    if (!hasApiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please set your Gemini API key before analyzing resumes",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsAnalyzing(true);
       setProcessingStage("Generating text from resume data");
@@ -130,24 +143,39 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
             Welcome to your resume review. Let's analyze your resume to help you improve it and stand out from the competition.
           </p>
 
-          <Button 
-            onClick={handleAnalyzeResume} 
-            disabled={isAnalyzing}
-            variant="default"
-            className="gap-2 w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 dark:from-indigo-600 dark:to-purple-600 text-white shadow-md"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {processingStage || "Analyzing..."}
-              </>
-            ) : (
-              <>
-                <Brain className="h-4 w-4" />
-                Analyze Resume with AI
-              </>
-            )}
-          </Button>
+          {!hasApiKey ? (
+            <div className="flex flex-col space-y-2">
+              <Alert variant="warning" className="mb-2">
+                <AlertTitle className="flex items-center gap-2">
+                  <Key className="h-4 w-4" />
+                  API Key Required
+                </AlertTitle>
+                <AlertDescription>
+                  You need to set up your Gemini API key to use the AI analyzer features.
+                </AlertDescription>
+              </Alert>
+              <ApiKeyManager />
+            </div>
+          ) : (
+            <Button 
+              onClick={handleAnalyzeResume} 
+              disabled={isAnalyzing}
+              variant="default"
+              className="gap-2 w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 dark:from-indigo-600 dark:to-purple-600 text-white shadow-md"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {processingStage || "Analyzing..."}
+                </>
+              ) : (
+                <>
+                  <Brain className="h-4 w-4" />
+                  Analyze Resume with AI
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
       

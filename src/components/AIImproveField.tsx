@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Wand2, Loader2, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiKeyService } from "@/services/ApiKeyService";
 
 interface AIImproveFieldProps {
   value: string;
@@ -38,6 +39,18 @@ export default function AIImproveField({
       return;
     }
 
+    // Get the API key from our service
+    const apiKey = apiKeyService.getApiKey("GEMINI_API_KEY");
+    
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please set your Gemini API key in the settings",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsImproving(true);
       
@@ -45,7 +58,7 @@ export default function AIImproveField({
       const prompt = generatePromptForField(fieldName, value);
       
       // Call the Gemini API using the API key
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=AIzaSyAEvHNa-fRhkLRnEyLHhR2Cp9t8memXYSg`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
