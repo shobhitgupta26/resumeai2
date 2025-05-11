@@ -1,5 +1,3 @@
-import { apiKeyService } from "./ApiKeyService";
-
 interface ResumeAnalysisRequest {
   text: string;
 }
@@ -51,7 +49,7 @@ export interface SavedAnalysis {
   results: AnalysisResultData;
 }
 
-// Using API key service instead of hardcoded key
+const GEMINI_API_KEY = "AIzaSyAEvHNa-fRhkLRnEyLHhR2Cp9t8memXYSg";
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
 
 import * as pdfjsLib from 'pdfjs-dist';
@@ -60,12 +58,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 export const analyzeResume = async (fileContent: string): Promise<AnalysisResultData> => {
   try {
     console.log("Analyzing resume with content length:", fileContent.length);
-    
-    // Get API key from service
-    const apiKey = apiKeyService.getApiKey("GEMINI_API_KEY");
-    if (!apiKey) {
-      throw new Error("Gemini API key not found. Please set your API key in the settings.");
-    }
     
     const cleanContent = await extractReadableText(fileContent);
     console.log("Cleaned content length:", cleanContent.length);
@@ -126,7 +118,7 @@ export const analyzeResume = async (fileContent: string): Promise<AnalysisResult
 
     console.log("Sending request to Gemini API...");
     
-    const response = await fetch(`${API_URL}?key=${apiKey}`, {
+    const response = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
