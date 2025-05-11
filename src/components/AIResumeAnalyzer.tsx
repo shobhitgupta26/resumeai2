@@ -27,7 +27,7 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
     if (!hasApiKey) {
       toast({
         title: "API Key Required",
-        description: "Please set the Gemini API key as an environment variable before analyzing resumes",
+        description: "Please set the Gemini API key as an environment variable (VITE_GEMINI_API_KEY) before analyzing resumes",
         variant: "destructive",
       });
       return;
@@ -142,17 +142,15 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
           </p>
 
           {!hasApiKey ? (
-            <div className="flex flex-col space-y-2">
-              <Alert variant="warning" className="mb-2">
-                <AlertTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  API Key Required
-                </AlertTitle>
-                <AlertDescription>
-                  The Gemini API key needs to be set as an environment variable (VITE_GEMINI_API_KEY) to use the AI analyzer features.
-                </AlertDescription>
-              </Alert>
-            </div>
+            <Alert className="mb-2">
+              <AlertTitle className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                API Key Required
+              </AlertTitle>
+              <AlertDescription>
+                The Gemini API key needs to be set as an environment variable (VITE_GEMINI_API_KEY) to use the AI analyzer features.
+              </AlertDescription>
+            </Alert>
           ) : (
             <Button 
               onClick={handleAnalyzeResume} 
