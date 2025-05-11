@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -5,6 +6,7 @@ import Footer from "@/components/Footer";
 import FileUpload from "@/components/analyzer/FileUpload";
 import AnalysisResult from "@/components/AnalysisResult";
 import SavedAnalyses from "@/components/SavedAnalyses";
+import ApiKeyManager from "@/components/ApiKeyManager";
 import { useToast } from "@/hooks/use-toast";
 import { 
   analyzeResume, 
@@ -43,7 +45,7 @@ export default function Analyzer() {
     if (!apiKeyService.hasApiKey("GEMINI_API_KEY")) {
       toast({
         title: "API Key Required",
-        description: "Please set the Gemini API key as an environment variable (VITE_GEMINI_API_KEY) before analyzing resumes",
+        description: "Please set your Gemini API key before analyzing resumes",
         variant: "destructive",
       });
       return;
@@ -134,6 +136,9 @@ export default function Analyzer() {
             <p className="text-lg text-muted-foreground">
               Get instant AI-powered insights on how to improve your resume
             </p>
+            <div className="mt-4 flex justify-center">
+              <ApiKeyManager />
+            </div>
           </div>
 
           <div className="flex justify-center mb-6">
