@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, Loader2, AlertCircle, FileText, Star, Key } from "lucide-react";
+import { Brain, Loader2, AlertCircle, FileText, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { analyzeResume } from "@/services/analyzerService";
 import { AnalysisResultData } from "@/services/analyzerService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { apiKeyService } from "@/services/ApiKeyService";
-import ApiKeyManager from "@/components/ApiKeyManager";
 
 interface AIResumeAnalyzerProps {
   resumeData: any;
@@ -28,7 +27,7 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
     if (!hasApiKey) {
       toast({
         title: "API Key Required",
-        description: "Please set your Gemini API key before analyzing resumes",
+        description: "Please set the Gemini API key as an environment variable before analyzing resumes",
         variant: "destructive",
       });
       return;
@@ -146,14 +145,13 @@ export default function AIResumeAnalyzer({ resumeData, onAnalysisComplete }: AIR
             <div className="flex flex-col space-y-2">
               <Alert variant="warning" className="mb-2">
                 <AlertTitle className="flex items-center gap-2">
-                  <Key className="h-4 w-4" />
+                  <AlertCircle className="h-4 w-4" />
                   API Key Required
                 </AlertTitle>
                 <AlertDescription>
-                  You need to set up your Gemini API key to use the AI analyzer features.
+                  The Gemini API key needs to be set as an environment variable (VITE_GEMINI_API_KEY) to use the AI analyzer features.
                 </AlertDescription>
               </Alert>
-              <ApiKeyManager />
             </div>
           ) : (
             <Button 
