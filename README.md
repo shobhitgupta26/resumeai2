@@ -31,11 +31,31 @@ Note: The `.env.local` file is included in `.gitignore` to prevent sensitive inf
 2. Navigate to Site settings > Build & deploy > Environment
 3. Add the required environment variables mentioned above
 
+![Netlify Environment Variables](https://docs.netlify.com/images/configure-builds/environment-variables.png)
+
+4. After adding environment variables, trigger a new deployment
+
 #### For Vercel Deployment:
 
 1. Go to your Vercel project dashboard
 2. Navigate to Settings > Environment Variables
 3. Add the required environment variables mentioned above
+
+## Deployment Steps for Netlify
+
+1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+2. Log in to your Netlify account
+3. Click "New site from Git"
+4. Select your repository and branch
+5. Configure your build settings:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+6. Click "Deploy site"
+7. Once deployed, go to Site settings > Build & deploy > Environment
+8. Add your environment variables:
+   - VITE_GEMINI_API_KEY
+   - VITE_CLERK_PUBLISHABLE_KEY
+9. Trigger a new deployment
 
 ## Development
 
@@ -45,10 +65,6 @@ To run the project locally:
 2. Install dependencies: `npm install`
 3. Create a `.env.local` file with your API keys
 4. Start the development server: `npm run dev`
-
-## Deployment
-
-This project can be easily deployed to Netlify, Vercel, or any other static site hosting platform that supports environment variables.
 
 ## Features
 
@@ -60,5 +76,6 @@ This project can be easily deployed to Netlify, Vercel, or any other static site
 ## Security Notes
 
 - API keys are never stored in the repository code
-- For local development, API keys can be temporarily stored in browser localStorage
-- In production, API keys should always be set as environment variables
+- API keys should always be set as environment variables in production
+- Never hardcode API keys in your application files
+
