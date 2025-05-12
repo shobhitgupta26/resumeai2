@@ -158,9 +158,41 @@ npm run dev
 
 ## 🔧 Environment Variables
 
-For full functionality, you'll need to set up:
+For full functionality, you'll need to set up the following environment variables in a `.env.local` file for development:
 
-- Clerk authentication keys
+```
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+VITE_GEMINI_API_KEY=your_gemini_api_key
+```
+
+For production deployment (e.g., Netlify, Vercel), set these environment variables in your hosting platform's dashboard.
+
+## 📚 Deployment
+
+### Deploying to Netlify
+
+1. Push your code to a GitHub repository
+2. Log in to Netlify and click "New site from Git"
+3. Select your GitHub repository
+4. Configure build settings:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+5. Add environment variables in the Netlify dashboard:
+   - Go to Site Settings > Environment variables
+   - Add `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_GEMINI_API_KEY`
+6. Deploy your site
+
+### Deploying to Vercel
+
+1. Push your code to a GitHub repository
+2. Log in to Vercel and click "New Project"
+3. Import your GitHub repository
+4. Configure build settings:
+   - Framework preset: Vite
+5. Add environment variables:
+   - Go to Settings > Environment Variables
+   - Add `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_GEMINI_API_KEY`
+6. Deploy your site
 
 ## 📚 Additional Resources
 
