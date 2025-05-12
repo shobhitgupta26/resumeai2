@@ -1,10 +1,12 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Wand2, Loader2, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+// Get the Gemini API key from environment variable
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 interface AIImproveFieldProps {
   value: string;
@@ -38,6 +40,15 @@ export default function AIImproveField({
       return;
     }
 
+    if (!GEMINI_API_KEY) {
+      toast({
+        title: "API Key Missing",
+        description: "Gemini API key is not configured. Please set the VITE_GEMINI_API_KEY environment variable.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsImproving(true);
       
@@ -45,7 +56,7 @@ export default function AIImproveField({
       const prompt = generatePromptForField(fieldName, value);
       
       // Call the Gemini API using the API key
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=AIzaSyAEvHNa-fRhkLRnEyLHhR2Cp9t8memXYSg`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
