@@ -50,7 +50,7 @@ export interface SavedAnalysis {
 }
 
 // Get the Gemini API key from environment variable
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyAEvHNa-fRhkLRnEyLHhR2Cp9t8memXYSg";
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
 
 import * as pdfjsLib from 'pdfjs-dist';
