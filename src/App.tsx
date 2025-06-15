@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SignIn, SignUp, useAuth } from "@clerk/clerk-react";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import Loading from "@/components/Loading";
 import Index from "./pages/Index";
 import Builder from "./pages/Builder";
 import Analyzer from "./pages/Analyzer";
@@ -20,12 +22,11 @@ const ProtectedRoute = ({ children }) => {
   const { isSignedIn, isLoaded } = useAuth();
   
   if (!isLoaded) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-pulse text-center">
-        <div className="h-8 w-32 bg-muted rounded-md mx-auto mb-4"></div>
-        <div className="h-4 w-48 bg-muted rounded-md mx-auto"></div>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
+        <Loading size="lg" text="Loading ResumeAI..." />
       </div>
-    </div>;
+    );
   }
   
   if (!isSignedIn) {
@@ -37,12 +38,13 @@ const ProtectedRoute = ({ children }) => {
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/templates" element={<Templates />} />
@@ -124,6 +126,7 @@ const App = () => {
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

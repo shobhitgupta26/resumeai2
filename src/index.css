@@ -80,8 +80,21 @@
     @apply backdrop-blur-md bg-white/80 dark:bg-black/30 border border-white/20 dark:border-white/10;
   }
   
+  .glass-card {
+    @apply backdrop-blur-lg bg-background/70 dark:bg-background/40 border border-border/50 shadow-lg;
+  }
+  
   .section-padding {
     @apply py-16 md:py-24;
+  }
+  
+  .bg-grid-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+  
+  .dark .bg-grid-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
   }
   
   .fade-in {
